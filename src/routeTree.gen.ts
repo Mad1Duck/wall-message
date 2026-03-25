@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as InboxIndexRouteImport } from './routes/inbox/index'
+import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as DemoStorybookRouteImport } from './routes/demo/storybook'
 import { Route as DemoI18nRouteImport } from './routes/demo.i18n'
 import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
@@ -23,6 +25,16 @@ const AboutRoute = AboutRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InboxIndexRoute = InboxIndexRouteImport.update({
+  id: '/inbox/',
+  path: '/inbox/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeIndexRoute = HomeIndexRouteImport.update({
+  id: '/home/',
+  path: '/home/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoStorybookRoute = DemoStorybookRouteImport.update({
@@ -47,6 +59,8 @@ export interface FileRoutesByFullPath {
   '/demo/clerk': typeof DemoClerkRoute
   '/demo/i18n': typeof DemoI18nRoute
   '/demo/storybook': typeof DemoStorybookRoute
+  '/home/': typeof HomeIndexRoute
+  '/inbox/': typeof InboxIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +68,8 @@ export interface FileRoutesByTo {
   '/demo/clerk': typeof DemoClerkRoute
   '/demo/i18n': typeof DemoI18nRoute
   '/demo/storybook': typeof DemoStorybookRoute
+  '/home': typeof HomeIndexRoute
+  '/inbox': typeof InboxIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,12 +78,28 @@ export interface FileRoutesById {
   '/demo/clerk': typeof DemoClerkRoute
   '/demo/i18n': typeof DemoI18nRoute
   '/demo/storybook': typeof DemoStorybookRoute
+  '/home/': typeof HomeIndexRoute
+  '/inbox/': typeof InboxIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/demo/clerk' | '/demo/i18n' | '/demo/storybook'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/demo/clerk'
+    | '/demo/i18n'
+    | '/demo/storybook'
+    | '/home/'
+    | '/inbox/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/demo/clerk' | '/demo/i18n' | '/demo/storybook'
+  to:
+    | '/'
+    | '/about'
+    | '/demo/clerk'
+    | '/demo/i18n'
+    | '/demo/storybook'
+    | '/home'
+    | '/inbox'
   id:
     | '__root__'
     | '/'
@@ -75,6 +107,8 @@ export interface FileRouteTypes {
     | '/demo/clerk'
     | '/demo/i18n'
     | '/demo/storybook'
+    | '/home/'
+    | '/inbox/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -83,6 +117,8 @@ export interface RootRouteChildren {
   DemoClerkRoute: typeof DemoClerkRoute
   DemoI18nRoute: typeof DemoI18nRoute
   DemoStorybookRoute: typeof DemoStorybookRoute
+  HomeIndexRoute: typeof HomeIndexRoute
+  InboxIndexRoute: typeof InboxIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +135,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inbox/': {
+      id: '/inbox/'
+      path: '/inbox'
+      fullPath: '/inbox/'
+      preLoaderRoute: typeof InboxIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home/': {
+      id: '/home/'
+      path: '/home'
+      fullPath: '/home/'
+      preLoaderRoute: typeof HomeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/storybook': {
@@ -131,6 +181,8 @@ const rootRouteChildren: RootRouteChildren = {
   DemoClerkRoute: DemoClerkRoute,
   DemoI18nRoute: DemoI18nRoute,
   DemoStorybookRoute: DemoStorybookRoute,
+  HomeIndexRoute: HomeIndexRoute,
+  InboxIndexRoute: InboxIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

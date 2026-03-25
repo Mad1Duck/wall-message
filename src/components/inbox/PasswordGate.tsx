@@ -14,8 +14,7 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check password against env var
-    const correctPassword = process.env.NEXT_PUBLIC_OWNER_PASSWORD || 'demo';
+    const correctPassword = import.meta.env.VITE_OWNER_PASSWORD || 'demo';
     
     if (password === correctPassword) {
       setError('');

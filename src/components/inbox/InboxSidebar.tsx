@@ -17,7 +17,7 @@ export default function InboxSidebar({ stats, filter, onFilterChange }: InboxSid
   ];
 
   return (
-    <aside className="w-full lg:w-[200px] bg-white border-b lg:border-b-0 lg:border-r border-[#e8e8e8] p-5">
+    <aside className="w-full lg:w-50 bg-white border-b lg:border-b-0 lg:border-r border-[#e8e8e8] p-5">
       {/* Logo */}
       <h1 className="font-serif text-[18px] text-[#0a0a0a] mb-6 font-normal">Kotak Masuk</h1>
 
