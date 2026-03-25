@@ -1,0 +1,24 @@
+{
+  "projectName": "mall-message",
+  "mode": "file-router",
+  "typescript": true,
+  "packageManager": "bun",
+  "includeExamples": true,
+  "tailwind": true,
+  "addOnOptions": {},
+  "envVarValues": {
+    "VITE_CLERK_PUBLISHABLE_KEY": "pk_test_Z29sZGVuLWZpc2gtNjAuY2xlcmsuYWNjb3VudHMuZGV2JA"
+  },
+  "git": true,
+  "routerOnly": false,
+  "version": 1,
+  "framework": "react",
+  "chosenAddOns": [
+    "biome",
+    "clerk",
+    "paraglide",
+    "shadcn",
+    "t3env",
+    "storybook"
+  ]
+}
