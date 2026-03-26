@@ -5,13 +5,15 @@ import ToggleSwitch from './ToggleSwitch';
 interface SendFormProps {
   onMessageSent: () => void;
   sheetdbUrl: string;
+  recipient?: string;
 }
 
-export default function SendForm({ onMessageSent, sheetdbUrl }: SendFormProps) {
+export default function SendForm({ onMessageSent, sheetdbUrl, recipient }: SendFormProps) {
   const [content, setContent] = useState('');
   const [alias, setAlias] = useState('');
   const [useAlias, setUseAlias] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -30,11 +32,13 @@ export default function SendForm({ onMessageSent, sheetdbUrl }: SendFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!content.trim() || !sheetdbUrl) {
-      console.error('Missing content or SheetDB URL');
+    if (!sheetdbUrl) {
+      setError('SheetDB URL belum dikonfigurasi.');
       return;
     }
+    if (!content.trim()) return;
 
+    setError('');
     setLoading(true);
 
     try {
@@ -55,6 +59,7 @@ export default function SendForm({ onMessageSent, sheetdbUrl }: SendFormProps) {
               reply: '',
               is_public: 'FALSE',
               created_at: new Date().toISOString(),
+              recipient: recipient || '',
             },
           ],
         }),
@@ -66,10 +71,10 @@ export default function SendForm({ onMessageSent, sheetdbUrl }: SendFormProps) {
         setUseAlias(false);
         onMessageSent();
       } else {
-        console.error('Failed to send message');
+        setError('Gagal mengirim pesan. Coba lagi.');
       }
-    } catch (error) {
-      console.error('Error sending message:', error);
+    } catch {
+      setError('Gagal mengirim pesan. Periksa koneksimu.');
     } finally {
       setLoading(false);
     }
@@ -141,22 +146,25 @@ export default function SendForm({ onMessageSent, sheetdbUrl }: SendFormProps) {
           )}
         </div>
 
+        {/* Error */}
+        {error && (
+          <p className="text-[11px] text-[#ff6b6b] text-center">{error}</p>
+        )}
+
         {/* Submit button */}
         <button
           ref={buttonRef}
           type="submit"
           disabled={loading || !content.trim()}
-          className="w-full bg-[#ffffff] text-[#0a0a0a] font-medium py-2 px-4 rounded-lg text-[13px] uppercase tracking-[0.04em] hover:bg-[#e8e8e8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          className="w-full border border-[#2a2a2a] text-[#ffffff] font-medium py-2 px-4 rounded-lg text-[13px] uppercase tracking-[0.04em] hover:border-[#555555] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
-              <div className="w-4 h-4 border-2 border-[#0a0a0a] border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-[#ffffff] border-t-transparent rounded-full animate-spin"></div>
               Mengirim...
             </>
           ) : (
-            <>
-              Kirim Pesan ◆
-            </>
+            'Kirim Pesan ◆'
           )}
         </button>
       </div>

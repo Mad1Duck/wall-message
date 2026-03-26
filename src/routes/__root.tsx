@@ -1,10 +1,9 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { Analytics } from '@vercel/analytics/react'
 
 import Footer from '../components/Footer'
-import Header from '../components/Header'
 
 import ClerkProvider from '../integrations/clerk/provider'
 
@@ -33,8 +32,27 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Titipkan Pesanmu — Wall Message',
       },
+      {
+        name: 'description',
+        content: 'Terima pesan anonim dari siapa saja. Tanpa nama, tanpa jejak.',
+      },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:title', content: 'Titipkan Pesanmu' },
+      {
+        property: 'og:description',
+        content: 'Terima pesan anonim dari siapa saja. Tanpa nama, tanpa jejak.',
+      },
+      { property: 'og:url', content: 'https://YOUR_DOMAIN_HERE' },
+      { property: 'og:image', content: 'https://YOUR_DOMAIN_HERE/og-image.png' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: 'Titipkan Pesanmu' },
+      {
+        name: 'twitter:description',
+        content: 'Terima pesan anonim dari siapa saja. Tanpa nama, tanpa jejak.',
+      },
+      { name: 'twitter:image', content: 'https://YOUR_DOMAIN_HERE/og-image.png' },
     ],
     links: [
       {
@@ -47,6 +65,9 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { location } = useRouterState()
+  const isEmbed = location.pathname.startsWith('/embed/')
+
   return (
     <html lang={getLocale()} suppressHydrationWarning>
       <head>
@@ -55,9 +76,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(79,184,178,0.24)]">
         <ClerkProvider>
-          <Header />
           {children}
-          <Footer />
+          {!isEmbed && <Footer />}
           <TanStackDevtools
             config={{
               position: 'bottom-right',

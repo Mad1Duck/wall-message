@@ -1,29 +1,60 @@
-export default function Header() {
+import { Link, useParams } from '@tanstack/react-router'
+
+interface HeaderProps {
+  displayName?: string
+  bio?: string
+  isOwner?: boolean
+}
+
+export default function Header({ displayName, bio, isOwner }: HeaderProps) {
+  const { username } = useParams({ strict: false }) as { username?: string }
+  const name = displayName || username || '[NAMA]'
+
   return (
-    <header className="bg-[#0a0a0a] border-b border-[#1e1e1e] py-8 px-4">
+    <header className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-4 py-8 relative">
+
+      {/* Top-right actions */}
+      <div className="absolute top-4 right-4 flex items-center gap-4">
+        {isOwner && username && (
+          <Link
+            to="/message/$username/inbox"
+            params={{ username }}
+            className="text-[10px] text-[#555555] hover:text-[#ffffff] uppercase tracking-[0.14em] transition-colors border border-[#1e1e1e] rounded-md px-2.5 py-1.5 hover:border-[#333333]"
+          >
+            Inbox ◆
+          </Link>
+        )}
+        <Link
+          to="/"
+          className="text-[10px] text-[#333333] hover:text-[#555555] uppercase tracking-[0.14em] transition-colors"
+        >
+          ◆
+        </Link>
+      </div>
+
       <div className="max-w-120 mx-auto text-center">
-        {/* Label */}
-        <p className="text-[10px] text-[#555555] uppercase tracking-widest mb-4">
-          untuk ✦ [NAMA KAMU]
+        <p className="text-[9px] text-[#333333] uppercase tracking-[0.22em] mb-3">
+          titipkan pesan untuk
         </p>
 
-        {/* Hero Title */}
-        <h1 className="font-serif italic text-[32px] text-[#ffffff] mb-3 leading-tight">
-          Titipkan Pesanmu
+        <h1 className="display-title italic text-[34px] text-[#ffffff] mb-2 leading-tight">
+          {name}
         </h1>
 
-        {/* Subtext */}
-        <p className="text-[13px] text-[#555555] mb-6">
-          Identitasmu akan selalu tersembunyi.
-        </p>
+        {username && name !== `@${username}` && (
+          <p className="text-[11px] text-[#444444] mb-3">@{username}</p>
+        )}
 
-        {/* Divider */}
-        <div className="flex items-center justify-center gap-2 mb-0">
-          <div className="flex-1 h-px bg-[#1e1e1e]"></div>
-          <span className="text-[#555555] text-xs">◆</span>
-          <div className="flex-1 h-px bg-[#1e1e1e]"></div>
+        {bio && (
+          <p className="text-[12px] text-[#555555] mb-4 max-w-xs mx-auto leading-relaxed">{bio}</p>
+        )}
+
+        <div className="flex items-center justify-center gap-3">
+          <div className="flex-1 h-px bg-[#1a1a1a] max-w-20" />
+          <span className="text-[#2a2a2a] text-[9px]">identitasmu tersembunyi</span>
+          <div className="flex-1 h-px bg-[#1a1a1a] max-w-20" />
         </div>
       </div>
     </header>
-  );
+  )
 }

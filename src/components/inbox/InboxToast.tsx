@@ -7,7 +7,7 @@ interface InboxToastProps {
 export default function InboxToast({ message, visible }: InboxToastProps) {
   return (
     <div
-      className={`fixed top-4 right-4 bg-[#0a0a0a] text-white px-4 py-3 rounded text-[12px] transition-opacity duration-300 ${
+      className={`fixed bottom-6 right-6 bg-[#111111] border border-[#2a2a2a] text-[#aaaaaa] px-4 py-2.5 rounded-lg text-[11px] uppercase tracking-widest transition-opacity duration-300 ${
         visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >

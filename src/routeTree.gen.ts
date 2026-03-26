@@ -9,17 +9,40 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AboutRouteImport } from './routes/about'
+import { Route as SsoCallbackRouteImport } from './routes/sso-callback'
+import { Route as SetupRouteImport } from './routes/setup'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as InboxIndexRouteImport } from './routes/inbox/index'
-import { Route as HomeIndexRouteImport } from './routes/home/index'
-import { Route as DemoStorybookRouteImport } from './routes/demo/storybook'
-import { Route as DemoI18nRouteImport } from './routes/demo.i18n'
-import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
+import { Route as EmbedMessageIdRouteImport } from './routes/embed/$messageId'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
+import { Route as MessageUsernameIndexRouteImport } from './routes/message/$username/index'
+import { Route as MessageUsernameInboxRouteImport } from './routes/message/$username/inbox'
 
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const SsoCallbackRoute = SsoCallbackRouteImport.update({
+  id: '/sso-callback',
+  path: '/sso-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -27,107 +50,151 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InboxIndexRoute = InboxIndexRouteImport.update({
-  id: '/inbox/',
-  path: '/inbox/',
+const EmbedMessageIdRoute = EmbedMessageIdRouteImport.update({
+  id: '/embed/$messageId',
+  path: '/embed/$messageId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HomeIndexRoute = HomeIndexRouteImport.update({
-  id: '/home/',
-  path: '/home/',
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoStorybookRoute = DemoStorybookRouteImport.update({
-  id: '/demo/storybook',
-  path: '/demo/storybook',
+const MessageUsernameIndexRoute = MessageUsernameIndexRouteImport.update({
+  id: '/message/$username/',
+  path: '/message/$username/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoI18nRoute = DemoI18nRouteImport.update({
-  id: '/demo/i18n',
-  path: '/demo/i18n',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoClerkRoute = DemoClerkRouteImport.update({
-  id: '/demo/clerk',
-  path: '/demo/clerk',
+const MessageUsernameInboxRoute = MessageUsernameInboxRouteImport.update({
+  id: '/message/$username/inbox',
+  path: '/message/$username/inbox',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/demo/clerk': typeof DemoClerkRoute
-  '/demo/i18n': typeof DemoI18nRoute
-  '/demo/storybook': typeof DemoStorybookRoute
-  '/home/': typeof HomeIndexRoute
-  '/inbox/': typeof InboxIndexRoute
+  '/explore': typeof ExploreRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/setup': typeof SetupRoute
+  '/sso-callback': typeof SsoCallbackRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/embed/$messageId': typeof EmbedMessageIdRoute
+  '/message/$username/inbox': typeof MessageUsernameInboxRoute
+  '/message/$username/': typeof MessageUsernameIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/demo/clerk': typeof DemoClerkRoute
-  '/demo/i18n': typeof DemoI18nRoute
-  '/demo/storybook': typeof DemoStorybookRoute
-  '/home': typeof HomeIndexRoute
-  '/inbox': typeof InboxIndexRoute
+  '/explore': typeof ExploreRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/setup': typeof SetupRoute
+  '/sso-callback': typeof SsoCallbackRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/embed/$messageId': typeof EmbedMessageIdRoute
+  '/message/$username/inbox': typeof MessageUsernameInboxRoute
+  '/message/$username': typeof MessageUsernameIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/demo/clerk': typeof DemoClerkRoute
-  '/demo/i18n': typeof DemoI18nRoute
-  '/demo/storybook': typeof DemoStorybookRoute
-  '/home/': typeof HomeIndexRoute
-  '/inbox/': typeof InboxIndexRoute
+  '/explore': typeof ExploreRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/setup': typeof SetupRoute
+  '/sso-callback': typeof SsoCallbackRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/embed/$messageId': typeof EmbedMessageIdRoute
+  '/message/$username/inbox': typeof MessageUsernameInboxRoute
+  '/message/$username/': typeof MessageUsernameIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
-    | '/demo/clerk'
-    | '/demo/i18n'
-    | '/demo/storybook'
-    | '/home/'
-    | '/inbox/'
+    | '/explore'
+    | '/login'
+    | '/profile'
+    | '/setup'
+    | '/sso-callback'
+    | '/auth/callback'
+    | '/embed/$messageId'
+    | '/message/$username/inbox'
+    | '/message/$username/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
-    | '/demo/clerk'
-    | '/demo/i18n'
-    | '/demo/storybook'
-    | '/home'
-    | '/inbox'
+    | '/explore'
+    | '/login'
+    | '/profile'
+    | '/setup'
+    | '/sso-callback'
+    | '/auth/callback'
+    | '/embed/$messageId'
+    | '/message/$username/inbox'
+    | '/message/$username'
   id:
     | '__root__'
     | '/'
-    | '/about'
-    | '/demo/clerk'
-    | '/demo/i18n'
-    | '/demo/storybook'
-    | '/home/'
-    | '/inbox/'
+    | '/explore'
+    | '/login'
+    | '/profile'
+    | '/setup'
+    | '/sso-callback'
+    | '/auth/callback'
+    | '/embed/$messageId'
+    | '/message/$username/inbox'
+    | '/message/$username/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  DemoClerkRoute: typeof DemoClerkRoute
-  DemoI18nRoute: typeof DemoI18nRoute
-  DemoStorybookRoute: typeof DemoStorybookRoute
-  HomeIndexRoute: typeof HomeIndexRoute
-  InboxIndexRoute: typeof InboxIndexRoute
+  ExploreRoute: typeof ExploreRoute
+  LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRoute
+  SetupRoute: typeof SetupRoute
+  SsoCallbackRoute: typeof SsoCallbackRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
+  EmbedMessageIdRoute: typeof EmbedMessageIdRoute
+  MessageUsernameInboxRoute: typeof MessageUsernameInboxRoute
+  MessageUsernameIndexRoute: typeof MessageUsernameIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/sso-callback': {
+      id: '/sso-callback'
+      path: '/sso-callback'
+      fullPath: '/sso-callback'
+      preLoaderRoute: typeof SsoCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -137,39 +204,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/inbox/': {
-      id: '/inbox/'
-      path: '/inbox'
-      fullPath: '/inbox/'
-      preLoaderRoute: typeof InboxIndexRouteImport
+    '/embed/$messageId': {
+      id: '/embed/$messageId'
+      path: '/embed/$messageId'
+      fullPath: '/embed/$messageId'
+      preLoaderRoute: typeof EmbedMessageIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/home/': {
-      id: '/home/'
-      path: '/home'
-      fullPath: '/home/'
-      preLoaderRoute: typeof HomeIndexRouteImport
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/storybook': {
-      id: '/demo/storybook'
-      path: '/demo/storybook'
-      fullPath: '/demo/storybook'
-      preLoaderRoute: typeof DemoStorybookRouteImport
+    '/message/$username/': {
+      id: '/message/$username/'
+      path: '/message/$username'
+      fullPath: '/message/$username/'
+      preLoaderRoute: typeof MessageUsernameIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/i18n': {
-      id: '/demo/i18n'
-      path: '/demo/i18n'
-      fullPath: '/demo/i18n'
-      preLoaderRoute: typeof DemoI18nRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/clerk': {
-      id: '/demo/clerk'
-      path: '/demo/clerk'
-      fullPath: '/demo/clerk'
-      preLoaderRoute: typeof DemoClerkRouteImport
+    '/message/$username/inbox': {
+      id: '/message/$username/inbox'
+      path: '/message/$username/inbox'
+      fullPath: '/message/$username/inbox'
+      preLoaderRoute: typeof MessageUsernameInboxRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -177,12 +237,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  DemoClerkRoute: DemoClerkRoute,
-  DemoI18nRoute: DemoI18nRoute,
-  DemoStorybookRoute: DemoStorybookRoute,
-  HomeIndexRoute: HomeIndexRoute,
-  InboxIndexRoute: InboxIndexRoute,
+  ExploreRoute: ExploreRoute,
+  LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRoute,
+  SetupRoute: SetupRoute,
+  SsoCallbackRoute: SsoCallbackRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
+  EmbedMessageIdRoute: EmbedMessageIdRoute,
+  MessageUsernameInboxRoute: MessageUsernameInboxRoute,
+  MessageUsernameIndexRoute: MessageUsernameIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
