@@ -6,9 +6,10 @@ interface SendFormProps {
   onMessageSent: () => void;
   sheetdbUrl: string;
   recipient?: string;
+  wallId?: string;
 }
 
-export default function SendForm({ onMessageSent, sheetdbUrl, recipient }: SendFormProps) {
+export default function SendForm({ onMessageSent, sheetdbUrl, recipient, wallId }: SendFormProps) {
   const [content, setContent] = useState('');
   const [alias, setAlias] = useState('');
   const [useAlias, setUseAlias] = useState(false);
@@ -60,6 +61,7 @@ export default function SendForm({ onMessageSent, sheetdbUrl, recipient }: SendF
               is_public: 'FALSE',
               created_at: new Date().toISOString(),
               recipient: recipient || '',
+              wall_id: wallId || '',
             },
           ],
         }),

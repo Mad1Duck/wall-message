@@ -50,18 +50,21 @@ export default function RouteComponent() {
 
   useEffect(() => {
     const url = import.meta.env.VITE_SHEETDB_MESSAGES_URL
-    if (url) {
-      setSheetdbUrl(url)
-      fetchMessages(url)
-      const interval = setInterval(() => fetchMessages(url), 30000)
+    if (url) setSheetdbUrl(url)
+  }, [])
+
+  useEffect(() => {
+    if (sheetdbUrl && wallProfile?.id) {
+      fetchMessages(sheetdbUrl, wallProfile.id)
+      const interval = setInterval(() => fetchMessages(sheetdbUrl, wallProfile.id!), 30000)
       return () => clearInterval(interval)
     }
-  }, [username])
+  }, [sheetdbUrl, wallProfile?.id])
 
-  const fetchMessages = async (url: string) => {
+  const fetchMessages = async (url: string, wallId: string) => {
     try {
       const response = await fetch(
-        `${url}/search?recipient=${encodeURIComponent(username)}`
+        `${url}/search?wall_id=${encodeURIComponent(wallId)}`
       )
       if (response.ok) {
         const raw = await response.json()
@@ -87,8 +90,8 @@ export default function RouteComponent() {
 
   const handleMessageSent = async () => {
     showToast('◆ Pesanmu sudah terkirim')
-    if (sheetdbUrl) {
-      setTimeout(() => fetchMessages(sheetdbUrl), 500)
+    if (sheetdbUrl && wallProfile?.id) {
+      setTimeout(() => fetchMessages(sheetdbUrl, wallProfile.id!), 500)
     }
   }
 
@@ -123,6 +126,7 @@ export default function RouteComponent() {
             onMessageSent={handleMessageSent}
             sheetdbUrl={sheetdbUrl}
             recipient={username}
+            wallId={wallProfile?.id}
           />
           <MessageWall messages={messages} />
         </div>
