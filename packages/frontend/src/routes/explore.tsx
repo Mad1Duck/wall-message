@@ -2,7 +2,8 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect, useMemo } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { getCachedProfile } from '#/lib/walls'
-import type { WallProfile } from '#/lib/walls'
+import { useRecentWalls, type WallProfile } from '#/features/walls'
+import { useMessageStats } from '#/features/messages'
 
 export const Route = createFileRoute('/explore')({ component: ExplorePage })
 
@@ -13,14 +14,6 @@ function relativeJoin(dateString: string): string {
   if (days === 0) return 'hari ini'
   if (days === 1) return '1 hari lalu'
   return `${days} hari lalu`
-}
-
-function parseItems(raw: unknown): any[] {
-  if (!raw || typeof raw !== 'object') return []
-  if (Array.isArray(raw)) return raw
-  const r = raw as Record<string, unknown>
-  if (r.error) return []
-  return Array.isArray(r.data) ? r.data : []
 }
 
 function WallExploreCard({
@@ -47,7 +40,7 @@ function WallExploreCard({
       onClick={() =>
         navigate({ to: '/message/$username', params: { username: wall.username } })
       }
-      className="flex items-center gap-3 bg-[#111111] border border-[#1a1a1a] rounded-[10px] px-[14px] py-3 hover:bg-[#161616] hover:border-[#2a2a2a] cursor-pointer transition-colors"
+      className="flex items-center gap-3 bg-[var(--w-surface)] border border-[var(--w-border)] rounded-[10px] px-3.5 py-3 hover:bg-[var(--w-surface-2)] hover:border-[var(--w-border-mid)] cursor-pointer transition-colors"
       style={{
         animation: `stagger-in 0.3s ease forwards`,
         animationDelay: `${Math.min(index, 11) * 50}ms`,
@@ -88,10 +81,10 @@ function WallExploreCard({
 
 function ExplorePage() {
   const { user, isSignedIn, isLoaded } = useUser()
-  const [walls, setWalls] = useState<WallProfile[]>([])
-  const [msgCounts, setMsgCounts] = useState<Record<string, number>>({})
-  const [lastMsgAt, setLastMsgAt] = useState<Record<string, string>>({})
-  const [loading, setLoading] = useState(true)
+  const { data: walls = [], isLoading } = useRecentWalls(1000)
+  const { data: stats } = useMessageStats()
+  const msgCounts = stats?.counts ?? {}
+  const lastMsgAt = stats?.lastAt ?? {}
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<'terbaru' | 'terpopuler' | 'teraktif'>('terbaru')
   const [page, setPage] = useState(1)
@@ -106,46 +99,6 @@ function ExplorePage() {
       }
     }
   }, [isLoaded, isSignedIn, user])
-
-  useEffect(() => {
-    const wallsUrl = import.meta.env.VITE_SHEETDB_WALLS_URL
-    const msgsUrl = import.meta.env.VITE_SHEETDB_MESSAGES_URL
-
-    Promise.all([
-      wallsUrl
-        ? fetch(wallsUrl)
-            .then((r) => r.json())
-            .then(parseItems)
-            .catch(() => [])
-        : Promise.resolve([]),
-      msgsUrl
-        ? fetch(msgsUrl)
-            .then((r) => r.json())
-            .then(parseItems)
-            .catch(() => [])
-        : Promise.resolve([]),
-    ]).then(([wallData, msgData]) => {
-      setWalls(wallData)
-
-      const counts: Record<string, number> = {}
-      const lastAt: Record<string, string> = {}
-      for (const m of msgData) {
-        if (!m.recipient) continue
-        if (m.is_public === 'TRUE') {
-          counts[m.recipient] = (counts[m.recipient] || 0) + 1
-        }
-        if (
-          !lastAt[m.recipient] ||
-          new Date(m.created_at) > new Date(lastAt[m.recipient])
-        ) {
-          lastAt[m.recipient] = m.created_at
-        }
-      }
-      setMsgCounts(counts)
-      setLastMsgAt(lastAt)
-      setLoading(false)
-    })
-  }, [])
 
   const filtered = useMemo(() => {
     let result = walls
@@ -182,8 +135,8 @@ function ExplorePage() {
   const hasMore = visible.length < filtered.length
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a]">
-      <div className="max-w-[560px] mx-auto px-4 py-10">
+    <main className="min-h-screen bg-[var(--w-bg)]">
+      <div className="max-w-140 mx-auto px-4 py-10">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -275,14 +228,14 @@ function ExplorePage() {
         </div>
 
         {/* Wall count */}
-        {!loading && (
+        {!isLoading && (
           <p className="text-[11px] text-[#444444] mb-4">
             Menampilkan {filtered.length} wall
           </p>
         )}
 
         {/* List */}
-        {loading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="w-4 h-4 border-2 border-[#ffffff] border-t-transparent rounded-full animate-spin" />
           </div>

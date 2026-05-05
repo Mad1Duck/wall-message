@@ -2,14 +2,24 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useClerk } from '@clerk/clerk-react'
 import { clearCachedProfile } from '#/lib/walls'
 
+interface MiniWall {
+  id: string
+  name: string
+  slug: string
+  description: string
+}
+
 interface InboxSidebarProps {
   username: string
   stats: { total: number; unreplied: number; public: number; pinned: number }
   filter: 'all' | 'unreplied' | 'replied' | 'pinned'
   onFilterChange: (filter: 'all' | 'unreplied' | 'replied' | 'pinned') => void
+  miniWalls?: MiniWall[]
+  onCreateMiniWall?: () => void
+  onDeleteMiniWall?: (id: string) => void
 }
 
-export default function InboxSidebar({ username, stats, filter, onFilterChange }: InboxSidebarProps) {
+export default function InboxSidebar({ username, stats, filter, onFilterChange, miniWalls = [], onCreateMiniWall, onDeleteMiniWall }: InboxSidebarProps) {
   const { signOut } = useClerk()
   const navigate = useNavigate()
 
@@ -83,6 +93,46 @@ export default function InboxSidebar({ username, stats, filter, onFilterChange }
               </span>
             </button>
           ))}
+        </div>
+
+        {/* Mini Walls */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <p className="text-[9px] text-[#333333] uppercase tracking-[0.18em]">Mini Walls</p>
+            {onCreateMiniWall && (
+              <button
+                onClick={onCreateMiniWall}
+                className="text-[10px] text-[#ffffff] hover:text-[#cccccc] uppercase tracking-[0.14em] transition-colors"
+              >
+                + Baru
+              </button>
+            )}
+          </div>
+          {miniWalls.length === 0 ? (
+            <p className="text-[10px] text-[#333333] italic">Belum ada mini wall</p>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {miniWalls.map((mw) => (
+                <div
+                  key={mw.id}
+                  className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg px-3 py-2 flex items-center justify-between"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] text-[#ffffff] truncate">{mw.name}</p>
+                    <p className="text-[9px] text-[#333333] truncate">/{username}/{mw.slug}</p>
+                  </div>
+                  {onDeleteMiniWall && (
+                    <button
+                      onClick={() => onDeleteMiniWall(mw.id)}
+                      className="ml-2 text-[10px] text-[#444444] hover:text-[#ffffff] transition-colors"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
       </div>

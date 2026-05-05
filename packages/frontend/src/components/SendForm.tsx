@@ -1,19 +1,22 @@
-
 import { useState, useRef } from 'react';
 import ToggleSwitch from './ToggleSwitch';
+import { useSendMessage } from '#/features/messages';
+import type { UseMutationResult } from '@tanstack/react-query';
+import type { Message, SendMessageData } from '#/features/messages';
 
 interface SendFormProps {
   onMessageSent: () => void;
-  sheetdbUrl: string;
   recipient?: string;
   wallId?: string;
+  mutation?: UseMutationResult<Message, Error, SendMessageData>;
 }
 
-export default function SendForm({ onMessageSent, sheetdbUrl, recipient, wallId }: SendFormProps) {
+export default function SendForm({ onMessageSent, recipient, wallId, mutation }: SendFormProps) {
+  const ownMutation = useSendMessage();
+  const send = mutation ?? ownMutation;
   const [content, setContent] = useState('');
   const [alias, setAlias] = useState('');
   const [useAlias, setUseAlias] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -30,56 +33,34 @@ export default function SendForm({ onMessageSent, sheetdbUrl, recipient, wallId 
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!sheetdbUrl) {
-      setError('SheetDB URL belum dikonfigurasi.');
+    if (!content.trim() || !wallId) {
+      if (!wallId) setError('Wall tidak ditemukan.');
       return;
     }
-    if (!content.trim()) return;
-
     setError('');
-    setLoading(true);
-
-    try {
-      if (buttonRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect();
-        createDiamondBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
-      }
-
-      const response = await fetch(sheetdbUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          data: [
-            {
-              id: crypto.randomUUID(),
-              content: content.trim(),
-              alias: useAlias && alias.trim() ? alias.trim() : 'Seseorang yang peduli 🌙',
-              reply: '',
-              is_public: 'FALSE',
-              created_at: new Date().toISOString(),
-              recipient: recipient || '',
-              wall_id: wallId || '',
-            },
-          ],
-        }),
-      });
-
-      if (response.ok) {
-        setContent('');
-        setAlias('');
-        setUseAlias(false);
-        onMessageSent();
-      } else {
-        setError('Gagal mengirim pesan. Coba lagi.');
-      }
-    } catch {
-      setError('Gagal mengirim pesan. Periksa koneksimu.');
-    } finally {
-      setLoading(false);
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      createDiamondBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
     }
+    send.mutate(
+      {
+        wall_id: wallId,
+        recipient: recipient || '',
+        content: content.trim(),
+        alias: useAlias && alias.trim() ? alias.trim() : 'Seseorang yang peduli 🌙',
+      },
+      {
+        onSuccess: () => {
+          setContent('');
+          setAlias('');
+          setUseAlias(false);
+          onMessageSent();
+        },
+        onError: () => setError('Gagal mengirim pesan. Coba lagi.'),
+      },
+    );
   };
 
   const createDiamondBurst = (x: number, y: number) => {
@@ -157,10 +138,10 @@ export default function SendForm({ onMessageSent, sheetdbUrl, recipient, wallId 
         <button
           ref={buttonRef}
           type="submit"
-          disabled={loading || !content.trim()}
+          disabled={send.isPending || !content.trim()}
           className="w-full border border-[#2a2a2a] text-[#ffffff] font-medium py-2 px-4 rounded-lg text-[13px] uppercase tracking-[0.04em] hover:border-[#555555] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
         >
-          {loading ? (
+          {send.isPending ? (
             <>
               <div className="w-4 h-4 border-2 border-[#ffffff] border-t-transparent rounded-full animate-spin"></div>
               Mengirim...

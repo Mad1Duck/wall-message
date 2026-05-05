@@ -5,8 +5,9 @@ import SendForm from '#/components/SendForm'
 import MessageWall from '#/components/MessageWall'
 import Toast from '#/components/toast'
 import Header from '#/components/Header'
-import { getCachedProfile, getWallByClerkUid, setCachedProfile, getWallByUsername } from '#/lib/walls'
-import type { WallProfile } from '#/lib/walls'
+import { getCachedProfile, setCachedProfile } from '#/lib/walls'
+import { useWall, useWallByClerk } from '#/features/walls'
+import { useMessages, useSendMessage } from '#/features/messages'
 
 export const Route = createFileRoute('/message/$username/')({
   component: RouteComponent,
@@ -15,70 +16,27 @@ export const Route = createFileRoute('/message/$username/')({
 export default function RouteComponent() {
   const { username } = Route.useParams()
   const { user, isSignedIn, isLoaded } = useUser()
-  const [messages, setMessages] = useState<any[]>([])
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({
     message: '',
     visible: false,
   })
-  const [sheetdbUrl, setSheetdbUrl] = useState<string>('')
   const toastTimeoutRef = useRef<NodeJS.Timeout>(null)
-  const [isOwner, setIsOwner] = useState(false)
-  const [wallProfile, setWallProfile] = useState<WallProfile | null>(null)
 
-  // Owner check via wall profile
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || !user) return
+  const { data: wallProfile } = useWall(username)
+  const { data: messages = [] } = useMessages(wallProfile?.id)
+  const sendMutation = useSendMessage()
+
+  const isOwner = (() => {
+    if (!isLoaded || !isSignedIn || !user) return false
     const cached = getCachedProfile()
-    if (cached && cached.clerk_uid === user.id) {
-      setIsOwner(cached.username === username)
-      return
-    }
-    getWallByClerkUid(user.id).then((wall) => {
-      if (wall) {
-        setCachedProfile(wall)
-        setIsOwner(wall.username === username)
-      }
-    })
-  }, [isLoaded, isSignedIn, user, username])
+    if (cached && cached.clerk_uid === user.id) return cached.username === username
+    return false
+  })()
 
-  // Load wall profile for display (display_name, bio)
+  const { data: clerkWall } = useWallByClerk(isSignedIn ? user?.id : undefined)
   useEffect(() => {
-    getWallByUsername(username).then((wall) => {
-      if (wall) setWallProfile(wall)
-    })
-  }, [username])
-
-  useEffect(() => {
-    const url = import.meta.env.VITE_SHEETDB_MESSAGES_URL
-    if (url) setSheetdbUrl(url)
-  }, [])
-
-  useEffect(() => {
-    if (sheetdbUrl && wallProfile?.id) {
-      fetchMessages(sheetdbUrl, wallProfile.id)
-      const interval = setInterval(() => fetchMessages(sheetdbUrl, wallProfile.id!), 30000)
-      return () => clearInterval(interval)
-    }
-  }, [sheetdbUrl, wallProfile?.id])
-
-  const fetchMessages = async (url: string, wallId: string) => {
-    try {
-      const response = await fetch(
-        `${url}/search?wall_id=${encodeURIComponent(wallId)}`
-      )
-      if (response.ok) {
-        const raw = await response.json()
-        const items = Array.isArray(raw) ? raw : (raw.data || [])
-        const sorted = items.sort(
-          (a: any, b: any) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )
-        setMessages(sorted)
-      }
-    } catch (error) {
-      console.error('Error fetching messages:', error)
-    }
-  }
+    if (clerkWall) setCachedProfile(clerkWall)
+  }, [clerkWall])
 
   const showToast = (message: string) => {
     setToast({ message, visible: true })
@@ -88,15 +46,12 @@ export default function RouteComponent() {
     }, 3000)
   }
 
-  const handleMessageSent = async () => {
+  const handleMessageSent = () => {
     showToast('◆ Pesanmu sudah terkirim')
-    if (sheetdbUrl && wallProfile?.id) {
-      setTimeout(() => fetchMessages(sheetdbUrl, wallProfile.id!), 500)
-    }
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] overflow-hidden relative">
+    <main className="min-h-screen bg-[var(--w-bg)] overflow-hidden relative">
       {/* Animated background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {Array.from({ length: 20 }).map((_, i) => (
@@ -124,11 +79,11 @@ export default function RouteComponent() {
         <div className="flex-1 px-4 py-8">
           <SendForm
             onMessageSent={handleMessageSent}
-            sheetdbUrl={sheetdbUrl}
             recipient={username}
             wallId={wallProfile?.id}
+            mutation={sendMutation}
           />
-          <MessageWall messages={messages} />
+          <MessageWall messages={messages} wallId={wallProfile?.id} />
         </div>
       </div>
 

@@ -1,103 +1,97 @@
 export interface WallProfile {
-  id: string
-  clerk_uid: string
-  username: string
-  display_name: string
-  bio: string
-  avatar_url: string
-  created_at: string
+  id: string;
+  clerk_uid: string;
+  username: string;
+  display_name: string;
+  bio: string;
+  avatar_url: string;
+  created_at: string;
 }
 
-const WALLS_URL = import.meta.env.VITE_SHEETDB_WALLS_URL as string | undefined
-
-function parseItems(raw: unknown): WallProfile[] {
-  if (!raw || typeof raw !== 'object') return []
-  if (Array.isArray(raw)) return raw as WallProfile[]
-  const r = raw as Record<string, unknown>
-  if (r.error) return []
-  return (Array.isArray(r.data) ? r.data : []) as WallProfile[]
-}
+const API_URL = import.meta.env.VITE_API_URL as string | undefined;
 
 export async function getWallByClerkUid(clerkUid: string): Promise<WallProfile | null> {
-  if (!WALLS_URL) return null
+  if (!API_URL) return null;
   try {
-    const res = await fetch(`${WALLS_URL}/search?clerk_uid=${encodeURIComponent(clerkUid)}`)
-    const items = parseItems(await res.json())
-    return items[0] ?? null
+    const res = await fetch(`${API_URL}/api/walls/by-clerk/${encodeURIComponent(clerkUid)}`);
+    if (!res.ok) return null;
+    return await res.json();
   } catch {
-    return null
+    return null;
   }
 }
 
 export async function checkUsernameAvailable(username: string): Promise<boolean> {
-  if (!WALLS_URL) return true
+  if (!API_URL) return true;
   try {
-    const res = await fetch(`${WALLS_URL}/search?username=${encodeURIComponent(username)}`)
-    const items = parseItems(await res.json())
-    return items.length === 0
+    const res = await fetch(`${API_URL}/api/walls/check-username/${encodeURIComponent(username)}`);
+    if (!res.ok) return true;
+    const data = await res.json();
+    return data.available === true;
   } catch {
-    return true
+    return true;
   }
 }
 
 export async function createWallProfile(
   data: Omit<WallProfile, 'id' | 'created_at'>,
 ): Promise<WallProfile | null> {
-  if (!WALLS_URL) return null
+  if (!API_URL) return null;
   try {
-    const profile: WallProfile = {
-      id: crypto.randomUUID(),
-      created_at: new Date().toISOString(),
-      ...data,
-    }
-    const res = await fetch(WALLS_URL, {
+    const res = await fetch(`${API_URL}/api/walls`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: [profile] }),
-    })
-    return res.ok ? profile : null
+      body: JSON.stringify({
+        clerk_uid: data.clerk_uid,
+        username: data.username,
+        display_name: data.display_name,
+        bio: data.bio,
+        avatar_url: data.avatar_url,
+      }),
+    });
+    if (!res.ok) return null;
+    return await res.json();
   } catch {
-    return null
+    return null;
   }
 }
 
 export async function getWallByUsername(username: string): Promise<WallProfile | null> {
-  if (!WALLS_URL) return null
+  if (!API_URL) return null;
   try {
-    const res = await fetch(`${WALLS_URL}/search?username=${encodeURIComponent(username)}`)
-    const items = parseItems(await res.json())
-    return items[0] ?? null
+    const res = await fetch(`${API_URL}/api/walls/by-username/${encodeURIComponent(username)}`);
+    if (!res.ok) return null;
+    return await res.json();
   } catch {
-    return null
+    return null;
   }
 }
 
 export async function getRecentWalls(limit = 6): Promise<WallProfile[]> {
-  if (!WALLS_URL) return []
+  if (!API_URL) return [];
   try {
-    const res = await fetch(WALLS_URL)
-    const items = parseItems(await res.json())
-    return items
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, limit)
+    const res = await fetch(`${API_URL}/api/walls`);
+    if (!res.ok) return [];
+    const data: WallProfile[] = await res.json();
+    return data.slice(0, limit);
   } catch {
-    return []
+    return [];
   }
 }
 
 export function getCachedProfile(): WallProfile | null {
   try {
-    const raw = sessionStorage.getItem('wall_profile')
-    return raw ? (JSON.parse(raw) as WallProfile) : null
+    const raw = sessionStorage.getItem('wall_profile');
+    return raw ? (JSON.parse(raw) as WallProfile) : null;
   } catch {
-    return null
+    return null;
   }
 }
 
 export function setCachedProfile(profile: WallProfile) {
-  sessionStorage.setItem('wall_profile', JSON.stringify(profile))
+  sessionStorage.setItem('wall_profile', JSON.stringify(profile));
 }
 
 export function clearCachedProfile() {
-  sessionStorage.removeItem('wall_profile')
+  sessionStorage.removeItem('wall_profile');
 }

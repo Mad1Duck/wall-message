@@ -3,8 +3,8 @@ interface Message {
   content: string
   alias: string
   reply?: string
-  is_public: string
-  is_pinned?: string
+  is_public: boolean
+  is_pinned: boolean
   created_at: string
 }
 
@@ -48,7 +48,7 @@ export default function InboxList({ messages, selectedId, onSelectMessage }: Inb
               className={`w-full text-left px-4 py-3 border-b border-[#111111] transition-colors ${
                 selectedId === msg.id
                   ? 'bg-[#111111] border-l-2 border-l-[#ffffff]'
-                  : msg.is_pinned === 'TRUE'
+                  : msg.is_pinned
                     ? 'hover:bg-[#0d0d0d] border-l-2 border-l-[#444444]'
                     : 'hover:bg-[#0d0d0d] border-l-2 border-l-transparent'
               }`}
@@ -60,7 +60,7 @@ export default function InboxList({ messages, selectedId, onSelectMessage }: Inb
                 }`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-1">
-                    {msg.is_pinned === 'TRUE' && (
+                    {msg.is_pinned && (
                       <span className="shrink-0 text-[7px] bg-[#0a0a0a] text-[#ffffff] border border-[#333333] px-1 py-0.5 rounded-sm uppercase tracking-wider">
                         ◆ Pin
                       </span>
@@ -77,7 +77,7 @@ export default function InboxList({ messages, selectedId, onSelectMessage }: Inb
                     </span>
                     <span className="text-[10px] text-[#2a2a2a]">·</span>
                     <span className="text-[10px] text-[#2a2a2a]">{relativeTime(msg.created_at)}</span>
-                    {msg.is_public === 'TRUE' && (
+                    {msg.is_public && (
                       <span className="text-[9px] text-[#2a2a2a] uppercase tracking-wider ml-auto">publik</span>
                     )}
                   </div>

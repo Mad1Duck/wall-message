@@ -9,9 +9,16 @@ interface Message {
   content: string
   alias: string
   reply?: string
-  is_public: string
-  is_pinned?: string
+  is_public: boolean
+  is_pinned: boolean
   created_at: string
+}
+
+interface MiniWall {
+  id: string
+  name: string
+  slug: string
+  description: string
 }
 
 interface InboxLayoutProps {
@@ -23,6 +30,9 @@ interface InboxLayoutProps {
   onTogglePin: (id: string, pin: boolean) => void
   onDeleteMessage: (id: string) => void
   toast: { message: string; visible: boolean }
+  miniWalls?: MiniWall[]
+  onCreateMiniWall?: () => void
+  onDeleteMiniWall?: (id: string) => void
 }
 
 type FilterType = 'all' | 'unreplied' | 'replied' | 'pinned'
@@ -36,22 +46,25 @@ export default function InboxLayout({
   onTogglePin,
   onDeleteMessage,
   toast,
+  miniWalls = [],
+  onCreateMiniWall,
+  onDeleteMiniWall,
 }: InboxLayoutProps) {
   const [filter, setFilter] = useState<FilterType>('all')
 
   const filtered = messages.filter((m) => {
     if (filter === 'unreplied') return !m.reply
     if (filter === 'replied') return !!m.reply
-    if (filter === 'pinned') return m.is_pinned === 'TRUE'
+    if (filter === 'pinned') return m.is_pinned
     return true
   })
 
-  const pinnedCount = messages.filter((m) => m.is_pinned === 'TRUE').length
+  const pinnedCount = messages.filter((m) => m.is_pinned).length
 
   const stats = {
     total: messages.length,
     unreplied: messages.filter((m) => !m.reply).length,
-    public: messages.filter((m) => m.is_public === 'TRUE').length,
+    public: messages.filter((m) => m.is_public).length,
     pinned: pinnedCount,
   }
 
@@ -66,6 +79,9 @@ export default function InboxLayout({
         stats={stats}
         filter={filter}
         onFilterChange={(f) => setFilter(f as FilterType)}
+        miniWalls={miniWalls}
+        onCreateMiniWall={onCreateMiniWall}
+        onDeleteMiniWall={onDeleteMiniWall}
       />
 
       {/* Content area */}

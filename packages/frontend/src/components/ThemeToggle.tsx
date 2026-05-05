@@ -1,81 +1,54 @@
 import { useEffect, useState } from 'react'
-
-type ThemeMode = 'light' | 'dark' | 'auto'
+import { Sun, Moon, Monitor } from 'lucide-react'
+import { applyThemeMode, type ThemeMode } from '#/lib/theme'
 
 function getInitialMode(): ThemeMode {
-  if (typeof window === 'undefined') {
-    return 'auto'
-  }
-
+  if (typeof window === 'undefined') return 'light'
   const stored = window.localStorage.getItem('theme')
-  if (stored === 'light' || stored === 'dark' || stored === 'auto') {
-    return stored
-  }
-
-  return 'auto'
+  return (stored === 'light' || stored === 'dark' || stored === 'auto') ? stored : 'light'
 }
 
-function applyThemeMode(mode: ThemeMode) {
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  const resolved = mode === 'auto' ? (prefersDark ? 'dark' : 'light') : mode
-
-  document.documentElement.classList.remove('light', 'dark')
-  document.documentElement.classList.add(resolved)
-
-  if (mode === 'auto') {
-    document.documentElement.removeAttribute('data-theme')
-  } else {
-    document.documentElement.setAttribute('data-theme', mode)
-  }
-
-  document.documentElement.style.colorScheme = resolved
+const CYCLE: ThemeMode[] = ['dark', 'light', 'auto']
+const LABELS: Record<ThemeMode, string> = { dark: 'Gelap', light: 'Terang', auto: 'Sistem' }
+const ICONS: Record<ThemeMode, React.ReactNode> = {
+  dark: <Moon size={14} />,
+  light: <Sun size={14} />,
+  auto: <Monitor size={14} />,
 }
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ className = '' }: { className?: string }) {
   const [mode, setMode] = useState<ThemeMode>('auto')
 
   useEffect(() => {
-    const initialMode = getInitialMode()
-    setMode(initialMode)
-    applyThemeMode(initialMode)
+    const m = getInitialMode()
+    setMode(m)
+    applyThemeMode(m)
   }, [])
 
   useEffect(() => {
-    if (mode !== 'auto') {
-      return
-    }
-
+    if (mode !== 'auto') return
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     const onChange = () => applyThemeMode('auto')
-
     media.addEventListener('change', onChange)
-    return () => {
-      media.removeEventListener('change', onChange)
-    }
+    return () => media.removeEventListener('change', onChange)
   }, [mode])
 
-  function toggleMode() {
-    const nextMode: ThemeMode =
-      mode === 'light' ? 'dark' : mode === 'dark' ? 'auto' : 'light'
-    setMode(nextMode)
-    applyThemeMode(nextMode)
-    window.localStorage.setItem('theme', nextMode)
+  function toggle() {
+    const next = CYCLE[(CYCLE.indexOf(mode) + 1) % CYCLE.length]
+    setMode(next)
+    applyThemeMode(next)
+    window.localStorage.setItem('theme', next)
   }
-
-  const label =
-    mode === 'auto'
-      ? 'Theme mode: auto (system). Click to switch to light mode.'
-      : `Theme mode: ${mode}. Click to switch mode.`
 
   return (
     <button
       type="button"
-      onClick={toggleMode}
-      aria-label={label}
-      title={label}
-      className="rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm font-semibold text-[var(--sea-ink)] shadow-[0_8px_22px_rgba(30,90,72,0.08)] transition hover:-translate-y-0.5"
+      onClick={toggle}
+      title={`Mode: ${LABELS[mode]}`}
+      className={`inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-[var(--w-text-muted)] hover:text-[var(--w-text)] transition-colors ${className}`}
     >
-      {mode === 'auto' ? 'Auto' : mode === 'dark' ? 'Dark' : 'Light'}
+      {ICONS[mode]}
+      {LABELS[mode]}
     </button>
   )
 }

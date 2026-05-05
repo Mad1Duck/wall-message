@@ -5,8 +5,8 @@ interface Message {
   content: string
   alias: string
   reply?: string
-  is_public: string
-  is_pinned?: string
+  is_public: boolean
+  is_pinned: boolean
   created_at: string
   recipient?: string
 }
@@ -31,7 +31,7 @@ function relativeTime(dateString: string): string {
 
 export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTogglePin, onDeleteMessage }: DetailPanelProps) {
   const [reply, setReply] = useState(message.reply || '')
-  const [isPublic, setIsPublic] = useState(message.is_public === 'TRUE')
+  const [isPublic, setIsPublic] = useState(message.is_public)
   const [isEditing, setIsEditing] = useState(!message.reply)
   const [showDelete, setShowDelete] = useState(false)
   const [embedCopied, setEmbedCopied] = useState(false)
@@ -74,12 +74,12 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
           }`}>
             {message.reply ? 'Sudah dibalas' : 'Belum dibalas'}
           </span>
-          {message.is_public === 'TRUE' && (
+          {message.is_public && (
             <span className="text-[9px] px-2 py-0.5 rounded-full border border-[#2a2a2a] text-[#555555] uppercase tracking-widest">
               Publik
             </span>
           )}
-          {message.is_pinned === 'TRUE' && (
+          {message.is_pinned && (
             <span className="text-[9px] px-2 py-0.5 rounded-full border border-[#2a2a2a] text-[#444444] uppercase tracking-widest">
               ◆ Disematkan
             </span>
@@ -141,25 +141,25 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
             </div>
 
             {/* Pin button — only for public messages */}
-            {message.is_public === 'TRUE' && (
+            {message.is_public && (
               <div>
-                {pinnedCount >= 3 && message.is_pinned !== 'TRUE' && (
+                {pinnedCount >= 3 && !message.is_pinned && (
                   <p className="text-[10px] text-[#555555] mb-2">
                     Maksimal 3 pesan disematkan. Lepas pin salah satu dulu.
                   </p>
                 )}
                 <button
-                  onClick={() => onTogglePin(message.id, message.is_pinned !== 'TRUE')}
-                  disabled={pinnedCount >= 3 && message.is_pinned !== 'TRUE'}
+                  onClick={() => onTogglePin(message.id, !message.is_pinned)}
+                  disabled={pinnedCount >= 3 && !message.is_pinned}
                   className={`w-full py-2.5 rounded-lg text-[12px] border transition-colors ${
-                    message.is_pinned === 'TRUE'
+                    message.is_pinned
                       ? 'bg-[#f5f5f5] border-[#e0e0e0] text-[#666666] hover:bg-[#ebebeb]'
                       : pinnedCount >= 3
                         ? 'bg-white border-black text-black opacity-40 cursor-not-allowed'
                         : 'bg-white border-black text-black hover:bg-[#f5f5f5]'
                   }`}
                 >
-                  {message.is_pinned === 'TRUE' ? '◆ Lepas Sematkan' : '◆ Sematkan ke Atas'}
+                  {message.is_pinned ? '◆ Lepas Sematkan' : '◆ Sematkan ke Atas'}
                 </button>
               </div>
             )}
@@ -174,7 +174,7 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
               </button>
               {message.reply && (
                 <button
-                  onClick={() => { setIsEditing(false); setReply(message.reply || ''); setIsPublic(message.is_public === 'TRUE') }}
+                  onClick={() => { setIsEditing(false); setReply(message.reply || ''); setIsPublic(message.is_public) }}
                   className="px-4 border border-[#2a2a2a] text-[#555555] py-2.5 rounded-lg text-[12px] hover:border-[#444444] hover:text-[#aaaaaa] transition-colors"
                 >
                   Batal
@@ -185,7 +185,7 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
         )}
 
         {/* Embed — only for public messages */}
-        {message.is_public === 'TRUE' && (
+        {message.is_public && (
           <div className="border-t border-[#1a1a1a] pt-4">
             <p className="text-[9px] text-[#333333] uppercase tracking-[0.18em] mb-2">Embed</p>
             <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg p-3 flex items-start gap-2 mb-2">

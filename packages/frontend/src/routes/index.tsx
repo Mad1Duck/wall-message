@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useUser, useSignIn, useClerk } from '@clerk/clerk-react'
 import { useState, useEffect, useRef } from 'react'
-import { getWallByClerkUid, getRecentWalls, getCachedProfile, setCachedProfile } from '#/lib/walls'
-import type { WallProfile } from '#/lib/walls'
+import { useRecentWalls, useWallByClerk, wallsApi, type WallProfile } from '#/features/walls'
 
 export const Route = createFileRoute('/')({ component: LandingPage })
 
@@ -73,22 +72,13 @@ function SendToUser() {
     setChecking(true)
     setNotFound(false)
     try {
-      const wallsUrl = import.meta.env.VITE_SHEETDB_WALLS_URL
-      if (wallsUrl) {
-        const res = await fetch(`${wallsUrl}/search?username=${encodeURIComponent(username)}`)
-        const raw = await res.json()
-        const items = Array.isArray(raw) ? raw : (raw.data || [])
-        if (!items.length || raw.error) {
-          setNotFound(true)
-          setChecking(false)
-          return
-        }
-      }
+      await wallsApi.getByUsername(username)
       navigate({ to: '/message/$username', params: { username } })
     } catch {
-      navigate({ to: '/message/$username', params: { username } })
+      setNotFound(true)
+    } finally {
+      setChecking(false)
     }
-    setChecking(false)
   }
 
   return (
@@ -138,37 +128,17 @@ function LandingPage() {
   const navigate = useNavigate()
 
   const [oauthLoading, setOauthLoading] = useState<'google' | 'discord' | null>(null)
-  const [recentWalls, setRecentWalls] = useState<WallProfile[]>([])
-  const [checkingProfile, setCheckingProfile] = useState(false)
-  const [wallProfile, setWallProfile] = useState<WallProfile | null>(null)
-  const [wallsCopied, setWallsCopied] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
-  // Load recent walls
+  const { data: recentWalls = [] } = useRecentWalls(6)
+  const { data: wallProfile, isLoading: checkingProfile } = useWallByClerk(
+    isSignedIn && isLoaded ? user?.id : undefined,
+  )
+
   useEffect(() => {
-    getRecentWalls(6).then(setRecentWalls)
-  }, [])
-
-  // If signed in, check/load wall profile
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || !user) return
-
-    const cached = getCachedProfile()
-    if (cached && cached.clerk_uid === user.id) {
-      setWallProfile(cached)
-      return
-    }
-
-    setCheckingProfile(true)
-    getWallByClerkUid(user.id).then((wall) => {
-      if (wall) {
-        setCachedProfile(wall)
-        setWallProfile(wall)
-      } else {
-        navigate({ to: '/setup' })
-      }
-      setCheckingProfile(false)
-    })
-  }, [isLoaded, isSignedIn, user])
+    if (!isLoaded || !isSignedIn || checkingProfile) return
+    if (!wallProfile) navigate({ to: '/setup' })
+  }, [isLoaded, isSignedIn, wallProfile, checkingProfile])
 
   const handleGoogleSignIn = async () => {
     if (!signIn || !signInLoaded) return
@@ -200,18 +170,16 @@ function LandingPage() {
 
   const handleSignOut = async () => {
     await signOut()
-    setWallProfile(null)
   }
 
-  const wallUrl = wallProfile ? `${window.location.origin}/message/${wallProfile.username}` : ''
-  const handleCopyWall = () => {
-    navigator.clipboard.writeText(wallUrl)
-    setWallsCopied(true)
-    setTimeout(() => setWallsCopied(false), 2000)
+  const handleCopyWall = (username: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/message/${username}`)
+    setCopiedId(username)
+    setTimeout(() => setCopiedId(null), 2000)
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] overflow-hidden relative">
+    <main className="min-h-screen bg-[var(--w-bg)] overflow-hidden relative">
       {/* Animated background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {Array.from({ length: 16 }).map((_, i) => (
@@ -237,14 +205,7 @@ function LandingPage() {
 
           {/* Top nav — signed in */}
           {isSignedIn && wallProfile && (
-            <div className="flex items-center justify-between mb-10 text-[11px]">
-              <Link
-                to="/message/$username/inbox"
-                params={{ username: wallProfile.username }}
-                className="text-[#444444] hover:text-[#ffffff] uppercase tracking-widest transition-colors"
-              >
-                Inbox
-              </Link>
+            <div className="flex items-center justify-end mb-10 text-[11px]">
               <button
                 onClick={handleSignOut}
                 className="text-[#333333] hover:text-[#ffffff] uppercase tracking-widest transition-colors"
@@ -274,43 +235,40 @@ function LandingPage() {
           </div>
 
           {/* Loading profile check */}
-          {isLoaded && isSignedIn && (checkingProfile || !wallProfile) ? (
+          {isLoaded && isSignedIn && checkingProfile ? (
             <div className="flex items-center justify-center gap-2 py-4">
               <div className="w-4 h-4 border-2 border-[#ffffff] border-t-transparent rounded-full animate-spin" />
               <span className="text-[11px] text-[#444444]">Memuat profil...</span>
             </div>
           ) : isSignedIn && wallProfile ? (
-            /* Signed in — show wall link */
+            /* Signed in — show single wall */
             <div className="space-y-3 text-left">
-              <p className="text-[10px] text-[#444444] uppercase tracking-widest text-center">
-                Link wallmu
-              </p>
-              <div className="bg-[#111111] border border-[#1e1e1e] rounded-xl p-3 flex items-center gap-3">
-                <span className="flex-1 text-[12px] text-[#777777] truncate font-mono">
-                  /message/{wallProfile.username}
-                </span>
-                <button
-                  onClick={handleCopyWall}
-                  className="text-[11px] text-[#555555] hover:text-[#ffffff] transition-colors whitespace-nowrap shrink-0"
-                >
-                  {wallsCopied ? '✓ Disalin' : 'Salin'}
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <Link
-                  to="/message/$username"
-                  params={{ username: wallProfile.username }}
-                  className="flex-1 text-center border border-[#2a2a2a] text-[#ffffff] font-medium py-2.5 rounded-lg text-[12px] uppercase tracking-[0.04em] hover:border-[#555555] transition-colors"
-                >
-                  Lihat Wall
-                </Link>
-                <Link
-                  to="/message/$username/inbox"
-                  params={{ username: wallProfile.username }}
-                  className="flex-1 text-center border border-[#1e1e1e] text-[#555555] font-medium py-2.5 rounded-lg text-[12px] uppercase tracking-[0.04em] hover:border-[#2a2a2a] hover:text-[#aaa] transition-colors"
-                >
-                  Inbox
-                </Link>
+              <div className="bg-[#111111] border border-[#1e1e1e] rounded-xl p-3 space-y-2">
+                <div className="flex items-center gap-3">
+                  <span className="flex-1 text-[12px] text-[#777777] truncate font-mono">/message/{wallProfile.username}</span>
+                  <button
+                    onClick={() => handleCopyWall(wallProfile.username)}
+                    className="text-[11px] text-[#555555] hover:text-[#ffffff] transition-colors whitespace-nowrap shrink-0"
+                  >
+                    {copiedId === wallProfile.username ? '✓' : 'Salin'}
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <Link
+                    to="/message/$username"
+                    params={{ username: wallProfile.username }}
+                    className="flex-1 text-center border border-[#2a2a2a] text-[#ffffff] font-medium py-1.5 rounded-lg text-[11px] uppercase tracking-[0.04em] hover:border-[#555555] transition-colors"
+                  >
+                    Wall
+                  </Link>
+                  <Link
+                    to="/message/$username/inbox"
+                    params={{ username: wallProfile.username }}
+                    className="flex-1 text-center border border-[#1e1e1e] text-[#555555] font-medium py-1.5 rounded-lg text-[11px] uppercase tracking-[0.04em] hover:border-[#2a2a2a] hover:text-[#aaa] transition-colors"
+                  >
+                    Inbox
+                  </Link>
+                </div>
               </div>
             </div>
           ) : !isLoaded ? (

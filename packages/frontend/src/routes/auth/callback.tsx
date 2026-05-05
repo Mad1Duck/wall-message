@@ -36,7 +36,7 @@ function AuthCallbackPage() {
   }, [isLoaded, isSignedIn, user])
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
+    <main className="min-h-screen bg-[var(--w-bg)] flex flex-col items-center justify-center gap-4">
       <div className="w-4 h-4 border-2 border-[#ffffff] border-t-transparent rounded-full animate-spin" />
       <p className="text-[11px] text-[#444444] uppercase tracking-[0.15em]">◆ Memproses login...</p>
     </main>

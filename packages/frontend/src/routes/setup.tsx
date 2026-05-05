@@ -1,11 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useState, useEffect, useRef } from 'react'
-import {
-  checkUsernameAvailable,
-  createWallProfile,
-  setCachedProfile,
-} from '#/lib/walls'
+import { useState, useEffect } from 'react'
+import { useCheckUsername, useCreateWall } from '#/features/walls'
 
 export const Route = createFileRoute('/setup')({
   component: SetupPage,
@@ -22,13 +18,22 @@ function SetupPage() {
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [bio, setBio] = useState('')
-  const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>('idle')
-  const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [successProfile, setSuccessProfile] = useState<{ username: string } | null>(null)
   const [copied, setCopied] = useState(false)
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const createWall = useCreateWall()
+  const { data: checkResult, isFetching: checkingUsername, isError: checkError } = useCheckUsername(username)
+
+  const usernameStatus: UsernameStatus = (() => {
+    if (!username) return 'idle'
+    if (!USERNAME_REGEX.test(username)) return 'invalid'
+    if (checkingUsername) return 'checking'
+    if (checkResult?.available === true) return 'available'
+    if (checkResult?.available === false) return 'taken'
+    if (checkError) return 'available'
+    return 'idle'
+  })()
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) navigate({ to: '/' })
@@ -40,20 +45,6 @@ function SetupPage() {
     }
   }, [user])
 
-  useEffect(() => {
-    if (!username) { setUsernameStatus('idle'); return }
-    if (!USERNAME_REGEX.test(username)) { setUsernameStatus('invalid'); return }
-
-    setUsernameStatus('checking')
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(async () => {
-      const available = await checkUsernameAvailable(username)
-      setUsernameStatus(available ? 'available' : 'taken')
-    }, 500)
-
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  }, [username])
-
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')
     setUsername(val)
@@ -62,38 +53,28 @@ function SetupPage() {
   const canSubmit =
     usernameStatus === 'available' &&
     displayName.trim().length > 0 &&
-    !submitting
+    !createWall.isPending
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!canSubmit || !user) return
 
-    setSubmitting(true)
     setSubmitError('')
-
-    const available = await checkUsernameAvailable(username)
-    if (!available) {
-      setUsernameStatus('taken')
-      setUsername('')
-      setSubmitting(false)
-      return
-    }
-
-    const profile = await createWallProfile({
-      clerk_uid: user.id,
-      username,
-      display_name: displayName.trim(),
-      bio: bio.trim(),
-      avatar_url: user.imageUrl || '',
-    })
-
-    if (profile) {
-      setCachedProfile(profile)
-      setSuccessProfile({ username: profile.username })
-    } else {
-      setSubmitError('Gagal membuat wall, coba lagi.')
-    }
-    setSubmitting(false)
+    createWall.mutate(
+      {
+        clerk_uid: user.id,
+        username,
+        display_name: displayName.trim(),
+        bio: bio.trim(),
+        avatar_url: user.imageUrl || '',
+      },
+      {
+        onSuccess: (profile) => {
+          setSuccessProfile({ username: profile.username })
+        },
+        onError: () => setSubmitError('Gagal membuat wall, coba lagi.'),
+      },
+    )
   }
 
   const wallUrl = successProfile
@@ -109,7 +90,7 @@ function SetupPage() {
   // Success screen
   if (successProfile) {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-6">
+      <main className="min-h-screen bg-[var(--w-bg)] flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-[400px] space-y-6 text-center">
           {/* Checkmark */}
           <div className="flex justify-center">
@@ -168,7 +149,7 @@ function SetupPage() {
   }[usernameStatus]
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-6 py-12">
+    <main className="min-h-screen bg-[var(--w-bg)] flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-[420px]">
 
         {/* Step indicator */}
@@ -293,7 +274,7 @@ function SetupPage() {
             disabled={!canSubmit}
             className="w-full bg-[#ffffff] text-[#0a0a0a] font-medium py-3 rounded-xl text-[13px] uppercase tracking-[0.04em] hover:bg-[#e0e0e0] disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-2"
           >
-            {submitting ? (
+            {createWall.isPending ? (
               <>
                 <div className="w-4 h-4 border-2 border-[#0a0a0a] border-t-transparent rounded-full animate-spin" />
                 Membuat wall...

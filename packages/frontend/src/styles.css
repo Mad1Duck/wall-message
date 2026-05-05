@@ -4,9 +4,26 @@
 
 @import 'tw-animate-css';
 
-@custom-variant dark (&:is(.dark *));
 
+/* ── CSS Variables (light default, .dark overrides) ─────────────── */
 :root {
+  /* Wall app tokens - light default */
+  --w-bg:             #f5f5f4;
+  --w-surface:        #ffffff;
+  --w-surface-2:      #fafafa;
+  --w-border:         #e5e5e5;
+  --w-border-mid:     #d4d4d4;
+  --w-border-strong:  #9a9a9a;
+  --w-text:           #0a0a0a;
+  --w-text-2:         #404040;
+  --w-text-3:         #606060;
+  --w-text-muted:     #737373;
+  --w-text-dim:       #a3a3a3;
+  --w-text-ghost:     #d4d4d4;
+  --w-accent:         #1D9E75;
+  --w-error:          #E24B4A;
+
+  /* Shadcn-style tokens - light default */
   --sea-ink: #173a40;
   --sea-ink-soft: #416166;
   --lagoon: #4fb8b2;
@@ -63,6 +80,23 @@
 }
 
 .dark {
+  /* Wall app tokens - dark */
+  --w-bg:             #0a0a0a;
+  --w-surface:        #111111;
+  --w-surface-2:      #161616;
+  --w-border:         #1e1e1e;
+  --w-border-mid:     #2a2a2a;
+  --w-border-strong:  #444444;
+  --w-text:           #ffffff;
+  --w-text-2:         #aaaaaa;
+  --w-text-3:         #777777;
+  --w-text-muted:     #555555;
+  --w-text-dim:       #333333;
+  --w-text-ghost:     #222222;
+  --w-accent:         #1D9E75;
+  --w-error:          #E24B4A;
+
+  /* Shadcn-style tokens - dark */
   --sea-ink: #d7ece8;
   --sea-ink-soft: #afcdc8;
   --lagoon: #60d7cf;
@@ -155,6 +189,22 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Wall app tokens */
+  --w-bg: var(--w-bg);
+  --w-surface: var(--w-surface);
+  --w-surface-2: var(--w-surface-2);
+  --w-border: var(--w-border);
+  --w-border-mid: var(--w-border-mid);
+  --w-border-strong: var(--w-border-strong);
+  --w-text: var(--w-text);
+  --w-text-2: var(--w-text-2);
+  --w-text-3: var(--w-text-3);
+  --w-text-muted: var(--w-text-muted);
+  --w-text-dim: var(--w-text-dim);
+  --w-text-ghost: var(--w-text-ghost);
+  --w-accent: var(--w-accent);
+  --w-error: var(--w-error);
 }
 
 html,

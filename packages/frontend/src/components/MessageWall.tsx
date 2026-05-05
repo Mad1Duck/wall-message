@@ -1,23 +1,12 @@
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-
-interface Message {
-  id: string;
-  content: string;
-  alias: string;
-  reply: string;
-  is_public: string;
-  is_pinned?: string;
-  created_at: string;
-  react_heart?: number;
-  react_fire?: number;
-  react_cry?: number;
-}
+import { useReactToMessage } from '#/features/messages';
+import type { Message } from '#/features/messages';
 
 interface MessageWallProps {
   messages: Message[];
+  wallId?: string;
 }
 
 interface ReactionCounts {
@@ -162,44 +151,24 @@ function MessageCard({
   );
 }
 
-export default function MessageWall({ messages }: MessageWallProps) {
-  const [reactionCounts, setReactionCounts] = useState<ReactionCounts>({});
+export default function MessageWall({ messages, wallId = '' }: MessageWallProps) {
   const [popStates, setPopStates] = useState<PopStates>({});
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const reactMutation = useReactToMessage(wallId);
 
-  const publicMessages = messages.filter((m) => m.is_public === 'TRUE');
-  const pinnedMessages = publicMessages
-    .filter((m) => m.is_pinned === 'TRUE')
-    .slice(0, 3);
-  const regularMessages = publicMessages.filter((m) => m.is_pinned !== 'TRUE');
+  const publicMessages = messages.filter((m) => m.is_public);
+  const pinnedMessages = publicMessages.filter((m) => m.is_pinned).slice(0, 3);
+  const regularMessages = publicMessages.filter((m) => !m.is_pinned);
 
-  useEffect(() => {
-    setReactionCounts((prev) => {
-      const counts: ReactionCounts = {};
-      publicMessages.forEach((msg) => {
-        counts[msg.id] = {
-          heart: Number(msg.react_heart) || 0,
-          fire: Number(msg.react_fire) || 0,
-          cry: Number(msg.react_cry) || 0,
-        };
-      });
-
-      const prevIds = Object.keys(prev);
-      const newIds = Object.keys(counts);
-
-      if (prevIds.length !== newIds.length) return counts;
-
-      const hasChanged = newIds.some(
-        (id) =>
-          prev[id]?.heart !== counts[id]?.heart ||
-          prev[id]?.fire !== counts[id]?.fire ||
-          prev[id]?.cry !== counts[id]?.cry,
-      );
-
-      return hasChanged ? counts : prev;
-    });
-  }, [publicMessages]);
+  const reactionCounts: ReactionCounts = {};
+  publicMessages.forEach((msg) => {
+    reactionCounts[msg.id] = {
+      heart: msg.react_heart,
+      fire: msg.react_fire,
+      cry: msg.react_cry,
+    };
+  });
 
   const showToastMsg = (msg: string) => {
     setToastMessage(msg);
@@ -207,7 +176,7 @@ export default function MessageWall({ messages }: MessageWallProps) {
     setTimeout(() => setShowToast(false), 2000);
   };
 
-  const handleReaction = async (messageId: string, emoji: 'heart' | 'fire' | 'cry') => {
+  const handleReaction = (messageId: string, emoji: 'heart' | 'fire' | 'cry') => {
     const reactionKey = `reacted_${messageId}`;
     const emojiKey = `reacted_${messageId}_${emoji}`;
 
@@ -216,46 +185,21 @@ export default function MessageWall({ messages }: MessageWallProps) {
       return;
     }
 
-    const fieldName = { heart: 'react_heart', fire: 'react_fire', cry: 'react_cry' }[emoji];
-    const newCount = (reactionCounts[messageId]?.[emoji] || 0) + 1;
-
-    setReactionCounts((prev) => ({
-      ...prev,
-      [messageId]: { ...prev[messageId], [emoji]: newCount },
-    }));
-
     const popKey = `${messageId}_${emoji}`;
     setPopStates((prev) => ({ ...prev, [popKey]: true }));
     setTimeout(() => setPopStates((prev) => ({ ...prev, [popKey]: false })), 300);
 
-    try {
-      const sheetdbUrl = import.meta.env.VITE_SHEETDB_MESSAGES_URL;
-      if (!sheetdbUrl) return;
-
-      const response = await fetch(`${sheetdbUrl}/id/${messageId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: { [fieldName]: newCount } }),
-      });
-
-      if (response.ok) {
-        localStorage.setItem(emojiKey, '1');
-        localStorage.setItem(reactionKey, emoji);
-        showToastMsg('Bereaksi!');
-      } else {
-        setReactionCounts((prev) => ({
-          ...prev,
-          [messageId]: { ...prev[messageId], [emoji]: newCount - 1 },
-        }));
-        showToastMsg('Gagal bereaksi');
-      }
-    } catch {
-      setReactionCounts((prev) => ({
-        ...prev,
-        [messageId]: { ...prev[messageId], [emoji]: newCount - 1 },
-      }));
-      showToastMsg('Gagal bereaksi');
-    }
+    reactMutation.mutate(
+      { id: messageId, type: emoji },
+      {
+        onSuccess: () => {
+          localStorage.setItem(emojiKey, '1');
+          localStorage.setItem(reactionKey, emoji);
+          showToastMsg('Bereaksi!');
+        },
+        onError: () => showToastMsg('Gagal bereaksi'),
+      },
+    );
   };
 
   const hasReacted = (messageId: string) =>

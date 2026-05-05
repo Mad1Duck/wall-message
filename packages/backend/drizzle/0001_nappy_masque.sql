@@ -1,0 +1,1 @@
+ALTER TABLE "walls" DROP CONSTRAINT "walls_clerk_uid_unique";

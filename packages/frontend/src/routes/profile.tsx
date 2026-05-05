@@ -29,7 +29,7 @@ function ProfilePage() {
 
   if (!isLoaded) {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <main className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center">
         <div className="w-5 h-5 border-2 border-[#ffffff] border-t-transparent rounded-full animate-spin" />
       </main>
     )
@@ -37,7 +37,7 @@ function ProfilePage() {
 
   if (!isSignedIn) {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4 px-4">
+      <main className="min-h-screen bg-[var(--w-bg)] flex flex-col items-center justify-center gap-4 px-4">
         <p className="text-[13px] text-[#555555]">Kamu belum masuk.</p>
         <Link
           to="/login"
@@ -50,7 +50,7 @@ function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] overflow-hidden relative">
+    <main className="min-h-screen bg-[var(--w-bg)] overflow-hidden relative">
       {/* Animated background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {Array.from({ length: 12 }).map((_, i) => (

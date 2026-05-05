@@ -3,29 +3,26 @@ import { useState, useEffect, useRef } from 'react'
 import { useUser, SignIn } from '@clerk/clerk-react'
 import InboxLayout from '#/components/inbox/InboxLayout'
 import { getCachedProfile, getWallByClerkUid, setCachedProfile } from '#/lib/walls'
+import { useMessages, useUpdateMessage, useDeleteMessage } from '#/features/messages'
+import { useMiniWalls, useCreateMiniWall, useDeleteMiniWall } from '#/features/mini-walls'
 
 export const Route = createFileRoute('/message/$username/inbox')({
   component: RouteComponent,
 })
 
-interface Message {
-  id: string
-  content: string
-  alias: string
-  reply?: string
-  is_public: string
-  is_pinned?: string
-  created_at: string
-  recipient?: string
-}
-
 export default function RouteComponent() {
   const { username } = Route.useParams()
   const { user, isSignedIn, isLoaded } = useUser()
-  const [messages, setMessages] = useState<Message[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [sheetdbUrl, setSheetdbUrl] = useState<string>('')
   const [wallId, setWallId] = useState<string>('')
+  const { data: messages = [] } = useMessages(wallId || undefined)
+  const { data: miniWalls = [] } = useMiniWalls(wallId || undefined)
+  const createMiniWallMutation = useCreateMiniWall()
+  const deleteMiniWallMutation = useDeleteMiniWall()
+  const updateMutation = useUpdateMessage()
+  const deleteMessageMutation = useDeleteMessage()
+  const [showMiniWallModal, setShowMiniWallModal] = useState(false)
+  const [newMiniWall, setNewMiniWall] = useState({ name: '', slug: '', description: '' })
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({
     message: '',
     visible: false,
@@ -58,38 +55,6 @@ export default function RouteComponent() {
     })
   }, [isLoaded, isSignedIn, user, username])
 
-  useEffect(() => {
-    const url = import.meta.env.VITE_SHEETDB_MESSAGES_URL
-    if (url) setSheetdbUrl(url)
-  }, [])
-
-  useEffect(() => {    
-    if (isOwner && sheetdbUrl && wallId) {
-      fetchMessages(sheetdbUrl, wallId)
-      const interval = setInterval(() => fetchMessages(sheetdbUrl, wallId), 20000)
-      return () => clearInterval(interval)
-    }
-  }, [isOwner, sheetdbUrl, wallId])
-
-  const fetchMessages = async (url: string, wid: string) => {
-    try {
-      const response = await fetch(
-        `${url}/search?wall_id=${encodeURIComponent(wid)}`
-      )
-      if (response.ok) {
-        const raw = await response.json()
-        const items = Array.isArray(raw) ? raw : (raw.data || [])
-        const sorted = items.sort(
-          (a: any, b: any) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )
-        setMessages(sorted)
-      }
-    } catch (error) {
-      console.error('Error fetching messages:', error)
-    }
-  }
-
   const showToast = (message: string) => {
     setToast({ message, visible: true })
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
@@ -98,72 +63,72 @@ export default function RouteComponent() {
     }, 3000)
   }
 
-  const handleUpdateReply = async (id: string, reply: string, isPublic: boolean) => {
-    try {
-      const response = await fetch(`${sheetdbUrl}/id/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          data: { reply, is_public: isPublic ? 'TRUE' : 'FALSE' },
-        }),
-      })
-      if (response.ok) {
-        showToast('Balasan disimpan')
-        setTimeout(() => fetchMessages(sheetdbUrl, wallId), 200)
-      }
-    } catch {
-      showToast('Gagal menyimpan balasan')
-    }
+  const handleUpdateReply = (id: string, reply: string, isPublic: boolean) => {
+    updateMutation.mutate(
+      { id, data: { reply, is_public: isPublic } },
+      {
+        onSuccess: () => showToast('Balasan disimpan'),
+        onError: () => showToast('Gagal menyimpan balasan'),
+      },
+    )
   }
 
-  const handleTogglePin = async (id: string, pin: boolean) => {
+  const handleTogglePin = (id: string, pin: boolean) => {
     if (pin) {
-      const pinnedCount = messages.filter((m) => m.is_pinned === 'TRUE').length
+      const pinnedCount = messages.filter((m) => m.is_pinned).length
       if (pinnedCount >= 3) {
         showToast('Maksimal 3 pesan disematkan. Lepas pin salah satu dulu.')
         return
       }
     }
-    const newPinState = pin ? 'TRUE' : 'FALSE'
-    // Optimistic update
-    setMessages((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, is_pinned: newPinState } : m))
+    updateMutation.mutate(
+      { id, data: { is_pinned: pin } },
+      {
+        onSuccess: () => showToast(pin ? '◆ Pesan disematkan ke wall' : 'Sematkan dilepas'),
+        onError: () => showToast('Gagal mengubah sematan'),
+      },
     )
-    try {
-      await fetch(`${sheetdbUrl}/id/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: { is_pinned: newPinState } }),
-      })
-      showToast(pin ? '◆ Pesan disematkan ke wall' : 'Sematkan dilepas')
-    } catch {
-      // Revert on error
-      setMessages((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, is_pinned: pin ? 'FALSE' : 'TRUE' } : m))
-      )
-      showToast('Gagal mengubah sematan')
-    }
   }
 
-  const handleDeleteMessage = async (id: string) => {
-    try {
-      const response = await fetch(`${sheetdbUrl}/id/${id}`, {
-        method: 'DELETE',
-      })
-      if (response.ok) {
-        showToast('Pesan dihapus')
-        setSelectedId(null)
-        setTimeout(() => fetchMessages(sheetdbUrl, wallId), 200)
-      }
-    } catch {
-      showToast('Gagal menghapus pesan')
-    }
+  const handleDeleteMessage = (id: string) => {
+    deleteMessageMutation.mutate(
+      { id, wallId },
+      {
+        onSuccess: () => {
+          showToast('Pesan dihapus')
+          setSelectedId(null)
+        },
+        onError: () => showToast('Gagal menghapus pesan'),
+      },
+    )
+  }
+
+  const handleCreateMiniWall = () => {
+    if (!wallId || !newMiniWall.name || !newMiniWall.slug) return
+    createMiniWallMutation.mutate(
+      { wallId, name: newMiniWall.name, slug: newMiniWall.slug, description: newMiniWall.description },
+      {
+        onSuccess: () => {
+          showToast('Mini wall dibuat')
+          setShowMiniWallModal(false)
+          setNewMiniWall({ name: '', slug: '', description: '' })
+        },
+        onError: () => showToast('Gagal membuat mini wall'),
+      },
+    )
+  }
+
+  const handleDeleteMiniWall = (id: string) => {
+    deleteMiniWallMutation.mutate(id, {
+      onSuccess: () => showToast('Mini wall dihapus'),
+      onError: () => showToast('Gagal menghapus mini wall'),
+    })
   }
 
   // Loading
   if (!isLoaded || !ownerChecked) {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <main className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center">
         <div className="w-5 h-5 border-2 border-[#ffffff] border-t-transparent rounded-full animate-spin" />
       </main>
     )
@@ -172,7 +137,7 @@ export default function RouteComponent() {
   // Not signed in
   if (!isSignedIn) {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-6 px-4">
+      <main className="min-h-screen bg-[var(--w-bg)] flex flex-col items-center justify-center gap-6 px-4">
         <p className="text-[13px] text-[#555555]">
           Masuk untuk melihat inbox kamu.
         </p>
@@ -184,7 +149,7 @@ export default function RouteComponent() {
   // Signed in but wrong user
   if (!isOwner) {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4 px-4">
+      <main className="min-h-screen bg-[var(--w-bg)] flex flex-col items-center justify-center gap-4 px-4">
         <p className="text-[13px] text-[#555555]">
           Kamu tidak punya akses ke inbox ini.
         </p>
@@ -209,6 +174,67 @@ export default function RouteComponent() {
       onTogglePin={handleTogglePin}
       onDeleteMessage={handleDeleteMessage}
       toast={toast}
+      miniWalls={miniWalls}
+      onCreateMiniWall={() => setShowMiniWallModal(true)}
+      onDeleteMiniWall={handleDeleteMiniWall}
     />
   )
+
+  // Mini Wall Creation Modal
+  if (showMiniWallModal) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-[#111111] border border-[#1e1e1e] rounded-xl p-6 w-full max-w-md">
+          <h3 className="text-[#ffffff] font-serif italic text-[18px] mb-4">Buat Mini Wall</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[#777777] text-[11px] uppercase tracking-widest mb-2">Nama</label>
+              <input
+                type="text"
+                value={newMiniWall.name}
+                onChange={(e) => setNewMiniWall({ ...newMiniWall, name: e.target.value })}
+                placeholder="e.g., App ABC"
+                className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-[#ffffff] text-[13px] focus:border-[#444444] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[#777777] text-[11px] uppercase tracking-widest mb-2">Slug</label>
+              <input
+                type="text"
+                value={newMiniWall.slug}
+                onChange={(e) => setNewMiniWall({ ...newMiniWall, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
+                placeholder="e.g., app-abc"
+                className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-[#ffffff] text-[13px] focus:border-[#444444] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[#777777] text-[11px] uppercase tracking-widest mb-2">Deskripsi</label>
+              <textarea
+                value={newMiniWall.description}
+                onChange={(e) => setNewMiniWall({ ...newMiniWall, description: e.target.value })}
+                placeholder="Deskripsi mini wall ini..."
+                rows={3}
+                className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-[#ffffff] text-[13px] focus:border-[#444444] focus:outline-none resize-none"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowMiniWallModal(false)}
+                className="flex-1 border border-[#2a2a2a] text-[#555555] font-medium py-2 rounded-lg text-[11px] uppercase tracking-[0.04em] hover:border-[#3a3a3a] transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleCreateMiniWall}
+                disabled={!newMiniWall.name || !newMiniWall.slug}
+                className="flex-1 bg-[#ffffff] text-[#0a0a0a] font-medium py-2 rounded-lg text-[11px] uppercase tracking-[0.04em] hover:bg-[#cccccc] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Buat
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 }
