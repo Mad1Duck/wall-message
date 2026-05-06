@@ -85,7 +85,16 @@ function WallDisplayEmbed() {
     }
   }
 
-  const displayMessages = messages?.slice(0, limit) || []
+  const displayMessages = messages
+    ?.filter(m => m.is_public && !m.mini_wall_id)
+    .sort((a, b) => {
+      // Pinned messages first
+      if (a.is_pinned && !b.is_pinned) return -1
+      if (!a.is_pinned && b.is_pinned) return 1
+      // Then by date (newest first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+    .slice(0, limit) || []
 
   if (isLoading) {
     return (
@@ -138,6 +147,13 @@ function WallDisplayEmbed() {
                 key={msg.id}
                 className="p-3 bg-[var(--w-bg)] border border-[var(--w-border-mid)] rounded-lg"
               >
+                {msg.is_pinned && (
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="text-[8px] bg-[var(--w-text)] text-[var(--w-bg)] px-1.5 py-0.5 rounded uppercase tracking-wider font-medium">
+                      ◆ Pin
+                    </span>
+                  </div>
+                )}
                 <p className="font-serif italic text-[13px] text-[var(--w-text-2)] leading-relaxed mb-2">
                   {msg.content}
                 </p>
