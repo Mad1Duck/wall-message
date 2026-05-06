@@ -31,10 +31,7 @@ app.route('/', HonoRouteBuilder.build(MiniWallsController));
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
-
-// export default {
-//   port: env.PORT,
-//   fetch: app.fetch,
-// };
-
-export default app.fetch;
+export default {
+  port: env.PORT,
+  fetch: app.fetch,
+};
