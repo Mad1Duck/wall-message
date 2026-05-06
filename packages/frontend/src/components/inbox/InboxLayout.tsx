@@ -76,72 +76,95 @@ export default function InboxLayout({
   const selectedMessage = messages.find((m) => m.id === selectedId)
 
   return (
-    <main className="h-screen bg-[var(--w-bg)] flex flex-col lg:flex-row overflow-hidden">
+    <main className="min-h-screen bg-[#0a0a0a] flex flex-col lg:flex-row relative">
+      {/* Animated background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute text-[#ffffff]"
+            style={{
+              left: `${(i * 5.2) % 100}%`,
+              animation: `drift-up ${14 + (i * 1.2) % 9}s linear ${(i * 0.6) % 6}s infinite`,
+              fontSize: '6px',
+              opacity: 0.06,
+            }}
+          >
+            ◆
+          </div>
+        ))}
+      </div>
 
-      {/* Sidebar */}
-      <InboxSidebar
-        username={username}
-        stats={stats}
-        filter={filter}
-        onFilterChange={(f) => setFilter(f as FilterType)}
-        miniWalls={miniWalls}
-        onCreateMiniWall={onCreateMiniWall}
-        onDeleteMiniWall={onDeleteMiniWall}
-        view={view}
-        onViewChange={setView}
-      />
+      <div className="relative z-10 flex flex-col lg:flex-row w-full lg:h-screen lg:overflow-hidden">
+        {/* Sidebar */}
+        <InboxSidebar
+          username={username}
+          stats={stats}
+          filter={filter}
+          onFilterChange={(f) => setFilter(f as FilterType)}
+          miniWalls={miniWalls}
+          onCreateMiniWall={onCreateMiniWall}
+          onDeleteMiniWall={onDeleteMiniWall}
+          view={view}
+          onViewChange={setView}
+        />
 
-      {/* Content area */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        {/* Content area */}
+        <div className="flex-1 flex flex-col lg:flex-row lg:overflow-hidden">
 
-        {view === 'messages' ? (
-          <>
-            {/* Message list */}
-            <div className="lg:w-72 overflow-hidden flex flex-col"
-              style={{ height: selectedMessage ? '40%' : '100%' }}>
-              <InboxList
-                messages={filtered}
-                selectedId={selectedId}
-                onSelectMessage={onSelectMessage}
-              />
-            </div>
+          {view === 'messages' ? (
+            <>
+              {/* Message list */}
+              <div className={`lg:w-80 overflow-hidden flex flex-col ${selectedMessage ? 'h-[45vh] lg:h-auto' : 'h-[60vh] lg:h-auto'}`}>
+                <InboxList
+                  messages={filtered}
+                  selectedId={selectedId}
+                  onSelectMessage={onSelectMessage}
+                />
+              </div>
 
-            {/* Detail */}
-            <div className="flex-1 overflow-hidden border-b lg:border-b-0 lg:border-l border-[var(--w-border-mid)] ">
-              {selectedMessage ? (
-                <DetailPanel
-                  message={selectedMessage}
-                  pinnedCount={pinnedCount}
-                  onUpdateReply={onUpdateReply}
-                  onTogglePin={onTogglePin}
-                  onDeleteMessage={onDeleteMessage}
+              {/* Detail */}
+              <div className="flex-1 overflow-hidden border-t lg:border-t-0 lg:border-l border-[#1a1a1a] min-h-[40vh] lg:min-h-0">
+                {selectedMessage ? (
+                  <DetailPanel
+                    message={selectedMessage}
+                    pinnedCount={pinnedCount}
+                    onUpdateReply={onUpdateReply}
+                    onTogglePin={onTogglePin}
+                    onDeleteMessage={onDeleteMessage}
+                  />
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center gap-4 py-12">
+                    <span className="text-[#1a1a1a] text-3xl">◆</span>
+                    <p className="text-[12px] text-[#444444]">Pilih pesan untuk melihat detail</p>
+                    <div className="flex items-center gap-3 mt-4 w-full max-w-48">
+                      <div className="flex-1 h-px bg-[#1a1a1a]" />
+                      <span className="text-[#222222] text-[9px]">◆</span>
+                      <div className="flex-1 h-px bg-[#1a1a1a]" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            /* Embed Panel */
+            <div className="flex-1 overflow-hidden border-t lg:border-t-0 lg:border-l border-[#1a1a1a]">
+              {wallId ? (
+                <EmbedPanel
+                  wallId={wallId}
+                  miniWalls={miniWalls}
+                  username={username}
                 />
               ) : (
-                <div className="h-full flex flex-col items-center justify-center gap-3">
-                  <span className="text-[var(--w-border-mid)] text-3xl">◆</span>
-                  <p className="text-[12px] text-[var(--w-text-muted)]">Pilih pesan untuk melihat detail</p>
+                <div className="h-full flex flex-col items-center justify-center gap-4 py-12">
+                  <span className="text-[#1a1a1a] text-3xl">◆</span>
+                  <p className="text-[12px] text-[#444444]">Wall ID tidak ditemukan</p>
                 </div>
               )}
             </div>
-          </>
-        ) : (
-          /* Embed Panel */
-          <div className="flex-1 overflow-hidden border-b lg:border-b-0 lg:border-l border-[var(--w-border-mid)]">
-            {wallId ? (
-              <EmbedPanel
-                wallId={wallId}
-                miniWalls={miniWalls}
-                username={username}
-              />
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center gap-3">
-                <span className="text-[var(--w-border-mid)] text-3xl">◆</span>
-                <p className="text-[12px] text-[var(--w-text-muted)]">Wall ID tidak ditemukan</p>
-              </div>
-            )}
-          </div>
-        )}
+          )}
 
+        </div>
       </div>
 
       <InboxToast message={toast.message} visible={toast.visible} />

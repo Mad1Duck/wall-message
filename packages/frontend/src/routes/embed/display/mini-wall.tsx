@@ -11,15 +11,55 @@ export const Route = createFileRoute('/embed/display/mini-wall')({
     miniWallId: s.miniWallId as string,
     theme: (s.theme as string) || 'auto',
     limit: Number(s.limit || 10),
+    bg: (s.bg as string) || '',
+    surface: (s.surface as string) || '',
+    text: (s.text as string) || '',
+    border: (s.border as string) || '',
+    accent: (s.accent as string) || '',
+    radius: (s.radius as string) || '',
+    customCss: (s.customCss as string) || '',
+    compact: (s.compact as string) || '',
   }),
   component: MiniWallDisplayEmbed,
 })
 
 function MiniWallDisplayEmbed() {
-  const { miniWallId, theme, limit } = Route.useSearch()
+  const search = Route.useSearch()
+  const { miniWallId, theme, limit } = search
   const [currentTheme, setCurrentTheme] = useState<ThemeMode>('auto')
+  const isCompact = !!search.compact
 
   const { data: messages, isLoading, error } = useMessagesByMiniWall(miniWallId)
+
+  useEffect(() => {
+    const root = document.documentElement
+    if (search.bg) root.style.setProperty('--w-bg', search.bg)
+    if (search.surface) root.style.setProperty('--w-surface', search.surface)
+    if (search.text) {
+      root.style.setProperty('--w-text', search.text)
+      root.style.setProperty('--w-text-2', search.text)
+    }
+    if (search.border) {
+      root.style.setProperty('--w-border', search.border)
+      root.style.setProperty('--w-border-mid', search.border)
+    }
+    if (search.accent) root.style.setProperty('--w-text', search.accent)
+    if (search.radius) {
+      document.querySelectorAll('.rounded-2xl, .rounded-lg').forEach((el) => {
+        ;(el as HTMLElement).style.borderRadius = `${search.radius}px`
+      })
+    }
+    if (search.customCss) {
+      const styleId = 'custom-embed-css'
+      let styleEl = document.getElementById(styleId) as HTMLStyleElement | null
+      if (!styleEl) {
+        styleEl = document.createElement('style')
+        styleEl.id = styleId
+        document.head.appendChild(styleEl)
+      }
+      styleEl.textContent = search.customCss
+    }
+  }, [search])
 
   useEffect(() => {
     const t = theme === 'dark' || theme === 'light' ? theme : 'auto'
@@ -48,7 +88,7 @@ function MiniWallDisplayEmbed() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6">
+      <div className={`${isCompact ? '' : 'min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6'}`}>
         <div className="w-4 h-4 border-2 border-[var(--w-text)] border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -56,15 +96,15 @@ function MiniWallDisplayEmbed() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6">
+      <div className={`${isCompact ? '' : 'min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6'}`}>
         <p className="text-[13px] text-[var(--w-text-muted)]">Gagal memuat pesan.</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-[var(--w-surface)] border border-[var(--w-border)] rounded-2xl overflow-hidden shadow-lg">
+    <div className={`${isCompact ? '' : 'min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6'}`}>
+      <div className={`w-full ${isCompact ? 'min-h-screen' : 'max-w-md'} bg-[var(--w-surface)] border border-[var(--w-border)] rounded-2xl overflow-hidden shadow-lg`}>
 
         {/* Header */}
         <div className="px-5 pt-4 pb-0 flex items-center justify-between">

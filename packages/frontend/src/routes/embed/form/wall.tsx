@@ -9,12 +9,25 @@ export const Route = createFileRoute('/embed/form/wall')({
     wallId: s.wallId as string,
     theme: (s.theme as string) || 'auto',
     recipient: (s.recipient as string) || '',
+    title: (s.title as string) || '',
+    placeholder: (s.placeholder as string) || '',
+    btnText: (s.btnText as string) || '',
+    successMsg: (s.successMsg as string) || '',
+    bg: (s.bg as string) || '',
+    surface: (s.surface as string) || '',
+    text: (s.text as string) || '',
+    border: (s.border as string) || '',
+    accent: (s.accent as string) || '',
+    radius: (s.radius as string) || '',
+    customCss: (s.customCss as string) || '',
+    compact: (s.compact as string) || '',
   }),
   component: WallFormEmbed,
 })
 
 function WallFormEmbed() {
-  const { wallId, theme, recipient } = Route.useSearch()
+  const search = Route.useSearch()
+  const { wallId, theme, recipient } = search
   const [currentTheme, setCurrentTheme] = useState<ThemeMode>('auto')
   const [content, setContent] = useState('')
   const [alias, setAlias] = useState('')
@@ -23,6 +36,37 @@ function WallFormEmbed() {
   const [success, setSuccess] = useState(false)
 
   const send = useSendMessage()
+
+  // Apply custom styles from query params
+  useEffect(() => {
+    const root = document.documentElement
+    if (search.bg) root.style.setProperty('--w-bg', search.bg)
+    if (search.surface) root.style.setProperty('--w-surface', search.surface)
+    if (search.text) {
+      root.style.setProperty('--w-text', search.text)
+      root.style.setProperty('--w-text-2', search.text)
+    }
+    if (search.border) {
+      root.style.setProperty('--w-border', search.border)
+      root.style.setProperty('--w-border-mid', search.border)
+    }
+    if (search.accent) root.style.setProperty('--w-text', search.accent)
+    if (search.radius) {
+      document.querySelectorAll('.rounded-2xl, .rounded-lg').forEach((el) => {
+        ;(el as HTMLElement).style.borderRadius = `${search.radius}px`
+      })
+    }
+    if (search.customCss) {
+      const styleId = 'custom-embed-css'
+      let styleEl = document.getElementById(styleId) as HTMLStyleElement | null
+      if (!styleEl) {
+        styleEl = document.createElement('style')
+        styleEl.id = styleId
+        document.head.appendChild(styleEl)
+      }
+      styleEl.textContent = search.customCss
+    }
+  }, [search])
 
   useEffect(() => {
     const t = theme === 'dark' || theme === 'light' ? theme : 'auto'
@@ -68,13 +112,15 @@ function WallFormEmbed() {
     )
   }
 
+  const isCompact = !!search.compact
+
   return (
-    <div className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-[var(--w-surface)] border border-[var(--w-border)] rounded-2xl overflow-hidden shadow-lg">
+    <div className={`${isCompact ? '' : 'min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6'}`}>
+      <div className={`w-full ${isCompact ? 'min-h-screen' : 'max-w-md'} bg-[var(--w-surface)] border border-[var(--w-border)] rounded-2xl overflow-hidden shadow-lg`}>
 
         {/* Header */}
         <div className="px-5 pt-4 pb-0 flex items-center justify-between">
-          <span className="text-[9px] text-[var(--w-text-dim)] uppercase tracking-[0.2em]">◆ Kirim Pesan</span>
+          <span className="text-[9px] text-[var(--w-text-dim)] uppercase tracking-[0.2em]">◆ {search.title || 'Kirim Pesan'}</span>
           <button
             type="button"
             onClick={toggleTheme}
@@ -97,7 +143,7 @@ function WallFormEmbed() {
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Tulis pesanmu di sini..."
+              placeholder={search.placeholder || 'Tulis pesanmu di sini...'}
               className="w-full min-h-24 px-3 py-2 bg-[var(--w-bg)] border border-[var(--w-border-mid)] rounded-lg text-[13px] text-[var(--w-text)] placeholder:text-[var(--w-text-dim)] resize-none focus:outline-none focus:border-[var(--w-text-muted)] transition-colors"
               maxLength={500}
             />
@@ -131,7 +177,7 @@ function WallFormEmbed() {
               disabled={send.isPending}
               className="w-full px-4 py-2.5 bg-[var(--w-text)] text-[var(--w-bg)] rounded-lg text-[12px] font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {send.isPending ? 'Mengirim...' : 'Kirim Pesan'}
+              {send.isPending ? 'Mengirim...' : (search.btnText || 'Kirim Pesan')}
             </button>
           </form>
 
@@ -140,7 +186,7 @@ function WallFormEmbed() {
           )}
 
           {success && (
-            <p className="mt-3 text-[11px] text-green-500 text-center">Pesan berhasil dikirim!</p>
+            <p className="mt-3 text-[11px] text-green-500 text-center">{search.successMsg || 'Pesan berhasil dikirim!'}</p>
           )}
         </div>
 

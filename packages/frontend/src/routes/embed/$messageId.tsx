@@ -7,7 +7,16 @@ import { applyThemeMode, type ThemeMode } from '#/lib/theme'
 import { Sun, Moon, Monitor } from 'lucide-react'
 
 export const Route = createFileRoute('/embed/$messageId')({
-  validateSearch: (s: Record<string, unknown>) => ({ theme: (s.theme as string) || 'auto' }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    theme: (s.theme as string) || 'auto',
+    bg: (s.bg as string) || '',
+    surface: (s.surface as string) || '',
+    text: (s.text as string) || '',
+    border: (s.border as string) || '',
+    accent: (s.accent as string) || '',
+    radius: (s.radius as string) || '',
+    customCss: (s.customCss as string) || '',
+  }),
   component: EmbedPage,
 })
 
@@ -23,12 +32,43 @@ interface Message {
 
 function EmbedPage() {
   const { messageId } = Route.useParams()
-  const { theme } = Route.useSearch()
+  const search = Route.useSearch()
+  const { theme } = search
   const navigate = Route.useNavigate()
   const [message, setMessage] = useState<Message | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [currentTheme, setCurrentTheme] = useState<ThemeMode>('auto')
+
+  useEffect(() => {
+    const root = document.documentElement
+    if (search.bg) root.style.setProperty('--w-bg', search.bg)
+    if (search.surface) root.style.setProperty('--w-surface', search.surface)
+    if (search.text) {
+      root.style.setProperty('--w-text', search.text)
+      root.style.setProperty('--w-text-2', search.text)
+    }
+    if (search.border) {
+      root.style.setProperty('--w-border', search.border)
+      root.style.setProperty('--w-border-mid', search.border)
+    }
+    if (search.accent) root.style.setProperty('--w-text', search.accent)
+    if (search.radius) {
+      document.querySelectorAll('.rounded-2xl, .rounded-lg').forEach((el) => {
+        ;(el as HTMLElement).style.borderRadius = `${search.radius}px`
+      })
+    }
+    if (search.customCss) {
+      const styleId = 'custom-embed-css'
+      let styleEl = document.getElementById(styleId) as HTMLStyleElement | null
+      if (!styleEl) {
+        styleEl = document.createElement('style')
+        styleEl.id = styleId
+        document.head.appendChild(styleEl)
+      }
+      styleEl.textContent = search.customCss
+    }
+  }, [search])
 
   useEffect(() => {
     const t = theme === 'dark' || theme === 'light' ? theme : 'auto'
@@ -40,7 +80,7 @@ function EmbedPage() {
     const newTheme: ThemeMode = currentTheme === 'auto' ? 'dark' : currentTheme === 'dark' ? 'light' : 'auto'
     setCurrentTheme(newTheme)
     applyThemeMode(newTheme)
-    navigate({ search: { theme: newTheme } })
+    navigate({ search: { ...search, theme: newTheme } })
   }
 
   useEffect(() => {
