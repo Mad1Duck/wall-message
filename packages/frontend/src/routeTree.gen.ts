@@ -20,6 +20,10 @@ import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as MessageUsernameIndexRouteImport } from './routes/message/$username/index'
 import { Route as MessageUsernameInboxRouteImport } from './routes/message/$username/inbox'
 import { Route as MessageUsernameSlugRouteImport } from './routes/message/$username/$slug'
+import { Route as EmbedFormWallRouteImport } from './routes/embed/form/wall'
+import { Route as EmbedFormMiniWallRouteImport } from './routes/embed/form/mini-wall'
+import { Route as EmbedDisplayWallRouteImport } from './routes/embed/display/wall'
+import { Route as EmbedDisplayMiniWallRouteImport } from './routes/embed/display/mini-wall'
 
 const SsoCallbackRoute = SsoCallbackRouteImport.update({
   id: '/sso-callback',
@@ -76,6 +80,26 @@ const MessageUsernameSlugRoute = MessageUsernameSlugRouteImport.update({
   path: '/message/$username/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmbedFormWallRoute = EmbedFormWallRouteImport.update({
+  id: '/embed/form/wall',
+  path: '/embed/form/wall',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbedFormMiniWallRoute = EmbedFormMiniWallRouteImport.update({
+  id: '/embed/form/mini-wall',
+  path: '/embed/form/mini-wall',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbedDisplayWallRoute = EmbedDisplayWallRouteImport.update({
+  id: '/embed/display/wall',
+  path: '/embed/display/wall',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbedDisplayMiniWallRoute = EmbedDisplayMiniWallRouteImport.update({
+  id: '/embed/display/mini-wall',
+  path: '/embed/display/mini-wall',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -86,6 +110,10 @@ export interface FileRoutesByFullPath {
   '/sso-callback': typeof SsoCallbackRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/embed/$messageId': typeof EmbedMessageIdRoute
+  '/embed/display/mini-wall': typeof EmbedDisplayMiniWallRoute
+  '/embed/display/wall': typeof EmbedDisplayWallRoute
+  '/embed/form/mini-wall': typeof EmbedFormMiniWallRoute
+  '/embed/form/wall': typeof EmbedFormWallRoute
   '/message/$username/$slug': typeof MessageUsernameSlugRoute
   '/message/$username/inbox': typeof MessageUsernameInboxRoute
   '/message/$username/': typeof MessageUsernameIndexRoute
@@ -99,6 +127,10 @@ export interface FileRoutesByTo {
   '/sso-callback': typeof SsoCallbackRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/embed/$messageId': typeof EmbedMessageIdRoute
+  '/embed/display/mini-wall': typeof EmbedDisplayMiniWallRoute
+  '/embed/display/wall': typeof EmbedDisplayWallRoute
+  '/embed/form/mini-wall': typeof EmbedFormMiniWallRoute
+  '/embed/form/wall': typeof EmbedFormWallRoute
   '/message/$username/$slug': typeof MessageUsernameSlugRoute
   '/message/$username/inbox': typeof MessageUsernameInboxRoute
   '/message/$username': typeof MessageUsernameIndexRoute
@@ -113,6 +145,10 @@ export interface FileRoutesById {
   '/sso-callback': typeof SsoCallbackRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/embed/$messageId': typeof EmbedMessageIdRoute
+  '/embed/display/mini-wall': typeof EmbedDisplayMiniWallRoute
+  '/embed/display/wall': typeof EmbedDisplayWallRoute
+  '/embed/form/mini-wall': typeof EmbedFormMiniWallRoute
+  '/embed/form/wall': typeof EmbedFormWallRoute
   '/message/$username/$slug': typeof MessageUsernameSlugRoute
   '/message/$username/inbox': typeof MessageUsernameInboxRoute
   '/message/$username/': typeof MessageUsernameIndexRoute
@@ -128,6 +164,10 @@ export interface FileRouteTypes {
     | '/sso-callback'
     | '/auth/callback'
     | '/embed/$messageId'
+    | '/embed/display/mini-wall'
+    | '/embed/display/wall'
+    | '/embed/form/mini-wall'
+    | '/embed/form/wall'
     | '/message/$username/$slug'
     | '/message/$username/inbox'
     | '/message/$username/'
@@ -141,6 +181,10 @@ export interface FileRouteTypes {
     | '/sso-callback'
     | '/auth/callback'
     | '/embed/$messageId'
+    | '/embed/display/mini-wall'
+    | '/embed/display/wall'
+    | '/embed/form/mini-wall'
+    | '/embed/form/wall'
     | '/message/$username/$slug'
     | '/message/$username/inbox'
     | '/message/$username'
@@ -154,6 +198,10 @@ export interface FileRouteTypes {
     | '/sso-callback'
     | '/auth/callback'
     | '/embed/$messageId'
+    | '/embed/display/mini-wall'
+    | '/embed/display/wall'
+    | '/embed/form/mini-wall'
+    | '/embed/form/wall'
     | '/message/$username/$slug'
     | '/message/$username/inbox'
     | '/message/$username/'
@@ -168,6 +216,10 @@ export interface RootRouteChildren {
   SsoCallbackRoute: typeof SsoCallbackRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   EmbedMessageIdRoute: typeof EmbedMessageIdRoute
+  EmbedDisplayMiniWallRoute: typeof EmbedDisplayMiniWallRoute
+  EmbedDisplayWallRoute: typeof EmbedDisplayWallRoute
+  EmbedFormMiniWallRoute: typeof EmbedFormMiniWallRoute
+  EmbedFormWallRoute: typeof EmbedFormWallRoute
   MessageUsernameSlugRoute: typeof MessageUsernameSlugRoute
   MessageUsernameInboxRoute: typeof MessageUsernameInboxRoute
   MessageUsernameIndexRoute: typeof MessageUsernameIndexRoute
@@ -252,6 +304,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessageUsernameSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/embed/form/wall': {
+      id: '/embed/form/wall'
+      path: '/embed/form/wall'
+      fullPath: '/embed/form/wall'
+      preLoaderRoute: typeof EmbedFormWallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embed/form/mini-wall': {
+      id: '/embed/form/mini-wall'
+      path: '/embed/form/mini-wall'
+      fullPath: '/embed/form/mini-wall'
+      preLoaderRoute: typeof EmbedFormMiniWallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embed/display/wall': {
+      id: '/embed/display/wall'
+      path: '/embed/display/wall'
+      fullPath: '/embed/display/wall'
+      preLoaderRoute: typeof EmbedDisplayWallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embed/display/mini-wall': {
+      id: '/embed/display/mini-wall'
+      path: '/embed/display/mini-wall'
+      fullPath: '/embed/display/mini-wall'
+      preLoaderRoute: typeof EmbedDisplayMiniWallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -264,6 +344,10 @@ const rootRouteChildren: RootRouteChildren = {
   SsoCallbackRoute: SsoCallbackRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   EmbedMessageIdRoute: EmbedMessageIdRoute,
+  EmbedDisplayMiniWallRoute: EmbedDisplayMiniWallRoute,
+  EmbedDisplayWallRoute: EmbedDisplayWallRoute,
+  EmbedFormMiniWallRoute: EmbedFormMiniWallRoute,
+  EmbedFormWallRoute: EmbedFormWallRoute,
   MessageUsernameSlugRoute: MessageUsernameSlugRoute,
   MessageUsernameInboxRoute: MessageUsernameInboxRoute,
   MessageUsernameIndexRoute: MessageUsernameIndexRoute,

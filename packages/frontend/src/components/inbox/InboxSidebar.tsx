@@ -17,9 +17,11 @@ interface InboxSidebarProps {
   miniWalls?: MiniWall[]
   onCreateMiniWall?: () => void
   onDeleteMiniWall?: (id: string) => void
+  view?: 'messages' | 'embed'
+  onViewChange?: (view: 'messages' | 'embed') => void
 }
 
-export default function InboxSidebar({ username, stats, filter, onFilterChange, miniWalls = [], onCreateMiniWall, onDeleteMiniWall }: InboxSidebarProps) {
+export default function InboxSidebar({ username, stats, filter, onFilterChange, miniWalls = [], onCreateMiniWall, onDeleteMiniWall, view = 'messages', onViewChange }: InboxSidebarProps) {
   const { signOut } = useClerk()
   const navigate = useNavigate()
 
@@ -75,25 +77,51 @@ export default function InboxSidebar({ username, stats, filter, onFilterChange, 
           <StatBlock label="Disematkan" value={stats.pinned} />
         </div>
 
-        {/* Filters */}
+        {/* View Toggle */}
         <div className="flex lg:flex-col gap-1.5">
-          {filters.map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => onFilterChange(opt.id)}
-              className={`flex-1 lg:flex-none flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium uppercase tracking-[0.04em] transition-colors ${
-                filter === opt.id
-                  ? 'bg-[var(--w-text)] text-[var(--w-bg)]'
-                  : 'text-[var(--w-text-muted)] hover:text-[var(--w-text)] hover:bg-[var(--w-surface-2)]'
-              }`}
-            >
-              <span>{opt.label}</span>
-              <span className={`text-[10px] ${filter === opt.id ? 'text-[var(--w-bg)]' : 'text-[var(--w-text-muted)]'}`}>
-                {opt.count}
-              </span>
-            </button>
-          ))}
+          <button
+            onClick={() => onViewChange?.('messages')}
+            className={`flex-1 lg:flex-none flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium uppercase tracking-[0.04em] transition-colors ${
+              view === 'messages'
+                ? 'bg-[var(--w-text)] text-[var(--w-bg)]'
+                : 'text-[var(--w-text-muted)] hover:text-[var(--w-text)] hover:bg-[var(--w-surface-2)]'
+            }`}
+          >
+            <span>Pesan</span>
+          </button>
+          <button
+            onClick={() => onViewChange?.('embed')}
+            className={`flex-1 lg:flex-none flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium uppercase tracking-[0.04em] transition-colors ${
+              view === 'embed'
+                ? 'bg-[var(--w-text)] text-[var(--w-bg)]'
+                : 'text-[var(--w-text-muted)] hover:text-[var(--w-text)] hover:bg-[var(--w-surface-2)]'
+            }`}
+          >
+            <span>Embed</span>
+          </button>
         </div>
+
+        {/* Filters - Only show in messages view */}
+        {view === 'messages' && (
+          <div className="flex lg:flex-col gap-1.5">
+            {filters.map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => onFilterChange(opt.id)}
+                className={`flex-1 lg:flex-none flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium uppercase tracking-[0.04em] transition-colors ${
+                  filter === opt.id
+                    ? 'bg-[var(--w-text)] text-[var(--w-bg)]'
+                    : 'text-[var(--w-text-muted)] hover:text-[var(--w-text)] hover:bg-[var(--w-surface-2)]'
+                }`}
+              >
+                <span>{opt.label}</span>
+                <span className={`text-[10px] ${filter === opt.id ? 'text-[var(--w-bg)]' : 'text-[var(--w-text-muted)]'}`}>
+                  {opt.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Mini Walls */}
         <div className="flex flex-col gap-2">

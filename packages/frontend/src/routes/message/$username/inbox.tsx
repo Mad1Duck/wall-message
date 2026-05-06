@@ -212,6 +212,7 @@ export default function RouteComponent() {
         miniWalls={miniWalls}
         onCreateMiniWall={() => setShowMiniWallModal(true)}
         onDeleteMiniWall={handleDeleteMiniWall}
+        wallId={wallId}
       />
 
       {/* Mini Wall Creation Modal */}
