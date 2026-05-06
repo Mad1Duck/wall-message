@@ -19,9 +19,22 @@ const app = new Hono();
 app.use(
   '*',
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (origin) => {
+      // Allow no origin (mobile apps, curl, etc)
+      if (!origin) return '*';
+      // Allow configured frontend URL if wildcard
+      if (env.FRONTEND_URL === '*') return '*';
+      // Allow exact match
+      if (origin === env.FRONTEND_URL) return origin;
+      // Allow localhost for development
+      if (origin.startsWith('http://localhost')) return origin;
+      // Allow the production frontend
+      if (origin === 'https://wall-message.vercel.app') return origin;
+      return undefined;
+    },
     allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
   }),
 );
 
