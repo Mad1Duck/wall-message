@@ -44,7 +44,7 @@ function WallDisplayEmbed() {
       root.style.setProperty('--w-border', search.border)
       root.style.setProperty('--w-border-mid', search.border)
     }
-    if (search.accent) root.style.setProperty('--w-text', search.accent)
+    if (search.accent) root.style.setProperty('--w-accent', search.accent)
     if (search.radius) {
       document.querySelectorAll('.rounded-2xl, .rounded-lg').forEach((el) => {
         ;(el as HTMLElement).style.borderRadius = `${search.radius}px`
@@ -136,7 +136,7 @@ function WallDisplayEmbed() {
         </div>
 
         {/* Messages */}
-        <div className="px-5 py-4 space-y-3 max-h-96 overflow-y-auto">
+        <div className="px-5 py-4 space-y-3 max-h-96 overflow-y-auto overflow-x-hidden">
           {displayMessages.length === 0 ? (
             <p className="text-[13px] text-[var(--w-text-muted)] text-center py-8">
               Belum ada pesan
@@ -145,7 +145,7 @@ function WallDisplayEmbed() {
             displayMessages.map((msg) => (
               <div
                 key={msg.id}
-                className="p-3 bg-[var(--w-bg)] border border-[var(--w-border-mid)] rounded-lg"
+                className="p-3 bg-[var(--w-bg)] border border-[var(--w-border-mid)] rounded-lg break-words overflow-hidden"
               >
                 {msg.is_pinned && (
                   <div className="flex items-center gap-1.5 mb-2">

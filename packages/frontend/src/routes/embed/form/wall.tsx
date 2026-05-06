@@ -50,7 +50,7 @@ function WallFormEmbed() {
       root.style.setProperty('--w-border', search.border)
       root.style.setProperty('--w-border-mid', search.border)
     }
-    if (search.accent) root.style.setProperty('--w-text', search.accent)
+    if (search.accent) root.style.setProperty('--w-accent', search.accent)
     if (search.radius) {
       document.querySelectorAll('.rounded-2xl, .rounded-lg').forEach((el) => {
         ;(el as HTMLElement).style.borderRadius = `${search.radius}px`
