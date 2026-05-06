@@ -30,8 +30,7 @@ export class MessagesService {
       .from(messages)
       .where(eq(messages.wallId, wallId))
       .orderBy(desc(messages.createdAt));
-    // Filter out messages that belong to a mini wall
-    return result.filter(msg => !msg.miniWallId).map(toResponse);
+    return result.map(toResponse);
   }
 
   async getByMiniWallId(miniWallId: string) {

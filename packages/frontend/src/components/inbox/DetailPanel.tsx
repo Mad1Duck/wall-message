@@ -2,6 +2,8 @@ import { useState } from 'react'
 
 interface Message {
   id: string
+  wall_id: string
+  mini_wall_id?: string
   content: string
   alias: string
   reply?: string
@@ -11,8 +13,16 @@ interface Message {
   recipient?: string
 }
 
+interface MiniWall {
+  id: string
+  name: string
+  slug: string
+  description: string
+}
+
 interface DetailPanelProps {
   message: Message
+  miniWalls?: MiniWall[]
   pinnedCount: number
   onUpdateReply: (id: string, reply: string, isPublic: boolean) => void
   onTogglePin: (id: string, pin: boolean) => void
@@ -29,12 +39,22 @@ function relativeTime(dateString: string): string {
   return `${Math.floor(hours / 24)} hari lalu`
 }
 
-export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTogglePin, onDeleteMessage }: DetailPanelProps) {
+export default function DetailPanel({ message, miniWalls = [], pinnedCount, onUpdateReply, onTogglePin, onDeleteMessage }: DetailPanelProps) {
   const [reply, setReply] = useState(message.reply || '')
   const [isPublic, setIsPublic] = useState(message.is_public)
   const [isEditing, setIsEditing] = useState(!message.reply)
   const [showDelete, setShowDelete] = useState(false)
   const [embedCopied, setEmbedCopied] = useState(false)
+
+  const getWallSource = (): { name: string; isMini: boolean } => {
+    if (message.mini_wall_id) {
+      const miniWall = miniWalls.find(mw => mw.id === message.mini_wall_id)
+      return { name: miniWall?.name || 'Mini Wall', isMini: true }
+    }
+    return { name: 'Parent Wall', isMini: false }
+  }
+
+  const wallSource = getWallSource()
 
   const embedUrl = `${window.location.origin}/embed/${message.id}`
   const embedCode = `<iframe src="${embedUrl}" width="550" height="200" frameborder="0" scrolling="no" style="border:none;border-radius:16px;overflow:hidden;"></iframe>`
@@ -56,6 +76,13 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
       {/* Message card */}
       <div className="p-6 border-b border-[#1a1a1a]">
         <div className="bg-[#111111] border border-[#1e1e1e] rounded-2xl p-5 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className={`text-[8px] px-2 py-0.5 rounded uppercase tracking-wider font-medium ${
+              wallSource.isMini ? 'bg-[#2a2a2a] text-[#aaaaaa]' : 'bg-[#1a1a1a] text-[#777777]'
+            }`}>
+              {wallSource.isMini ? '◆ ' : ''}{wallSource.name}
+            </span>
+          </div>
           <p className="display-title italic text-[16px] text-[#aaaaaa] leading-[1.7] mb-4">
             &ldquo;{message.content}&rdquo;
           </p>

@@ -7,6 +7,8 @@ import EmbedPanel from './EmbedPanel'
 
 interface Message {
   id: string
+  wall_id: string
+  mini_wall_id?: string
   content: string
   alias: string
   reply?: string
@@ -118,6 +120,7 @@ export default function InboxLayout({
               <div className={`lg:w-80 overflow-hidden flex flex-col ${selectedMessage ? 'h-[45vh] lg:h-auto' : 'h-[60vh] lg:h-auto'}`}>
                 <InboxList
                   messages={filtered}
+                  miniWalls={miniWalls}
                   selectedId={selectedId}
                   onSelectMessage={onSelectMessage}
                 />
@@ -128,6 +131,7 @@ export default function InboxLayout({
                 {selectedMessage ? (
                   <DetailPanel
                     message={selectedMessage}
+                    miniWalls={miniWalls}
                     pinnedCount={pinnedCount}
                     onUpdateReply={onUpdateReply}
                     onTogglePin={onTogglePin}

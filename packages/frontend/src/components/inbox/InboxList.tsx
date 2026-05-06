@@ -1,5 +1,7 @@
 interface Message {
   id: string
+  wall_id: string
+  mini_wall_id?: string
   content: string
   alias: string
   reply?: string
@@ -8,8 +10,16 @@ interface Message {
   created_at: string
 }
 
+interface MiniWall {
+  id: string
+  name: string
+  slug: string
+  description: string
+}
+
 interface InboxListProps {
   messages: Message[]
+  miniWalls?: MiniWall[]
   selectedId: string | null
   onSelectMessage: (id: string) => void
 }
@@ -24,7 +34,14 @@ function relativeTime(dateString: string): string {
   return `${Math.floor(hours / 24)}h lalu`
 }
 
-export default function InboxList({ messages, selectedId, onSelectMessage }: InboxListProps) {
+export default function InboxList({ messages, miniWalls = [], selectedId, onSelectMessage }: InboxListProps) {
+  const getWallSource = (msg: Message): { name: string; isMini: boolean } => {
+    if (msg.mini_wall_id) {
+      const miniWall = miniWalls.find(mw => mw.id === msg.mini_wall_id)
+      return { name: miniWall?.name || 'Mini Wall', isMini: true }
+    }
+    return { name: 'Parent Wall', isMini: false }
+  }
   return (
     <div className="flex flex-col h-full bg-[#0a0a0a]">
       {/* Header */}
@@ -68,6 +85,16 @@ export default function InboxList({ messages, selectedId, onSelectMessage }: Inb
                           ◆ Pin
                         </span>
                       )}
+                      {(() => {
+                        const source = getWallSource(msg)
+                        return (
+                          <span className={`shrink-0 text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-medium ${
+                            source.isMini ? 'bg-[#2a2a2a] text-[#aaaaaa]' : 'bg-[#1a1a1a] text-[#777777]'
+                          }`}>
+                            {source.isMini ? '◆ ' : ''}{source.name}
+                          </span>
+                        )
+                      })()}
                       <p className={`text-[12px] leading-snug truncate ${
                         selectedId === msg.id ? 'text-[#ffffff]' : msg.reply ? 'text-[#555555]' : 'text-[#aaaaaa]'
                       }`}>
