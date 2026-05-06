@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import { messagesApi } from '#/features/messages'
-import { applyThemeMode } from '#/lib/theme'
+import { applyThemeMode, type ThemeMode } from '#/lib/theme'
+import { Sun, Moon, Monitor } from 'lucide-react'
 
 export const Route = createFileRoute('/embed/$messageId')({
   validateSearch: (s: Record<string, unknown>) => ({ theme: (s.theme as string) || 'auto' }),
@@ -23,14 +24,24 @@ interface Message {
 function EmbedPage() {
   const { messageId } = Route.useParams()
   const { theme } = Route.useSearch()
+  const navigate = Route.useNavigate()
   const [message, setMessage] = useState<Message | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [currentTheme, setCurrentTheme] = useState<ThemeMode>('auto')
 
   useEffect(() => {
     const t = theme === 'dark' || theme === 'light' ? theme : 'auto'
+    setCurrentTheme(t)
     applyThemeMode(t)
   }, [theme])
+
+  const toggleTheme = () => {
+    const newTheme: ThemeMode = currentTheme === 'auto' ? 'dark' : currentTheme === 'dark' ? 'light' : 'auto'
+    setCurrentTheme(newTheme)
+    applyThemeMode(newTheme)
+    navigate({ search: { theme: newTheme } })
+  }
 
   useEffect(() => {
     messagesApi.getById(messageId)
@@ -58,7 +69,7 @@ function EmbedPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6">
         <div className="w-4 h-4 border-2 border-[var(--w-text)] border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -66,7 +77,7 @@ function EmbedPage() {
 
   if (notFound || !message) {
     return (
-      <div className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6">
         <p className="text-[13px] text-[var(--w-text-muted)]">Pesan tidak tersedia.</p>
       </div>
     )
@@ -77,12 +88,26 @@ function EmbedPage() {
     : window.location.origin
 
   return (
-    <div className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-4">
-      <div className="w-full max-w-130 bg-[var(--w-surface)] border border-[var(--w-border)] rounded-2xl overflow-hidden">
+    <div className="min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6">
+      <div className="w-full max-w-130 bg-[var(--w-surface)] border border-[var(--w-border)] rounded-2xl overflow-hidden shadow-lg">
 
         {/* Top branding strip */}
-        <div className="px-5 pt-4 pb-0 flex items-center gap-2">
+        <div className="px-5 pt-4 pb-0 flex items-center justify-between">
           <span className="text-[9px] text-[var(--w-text-dim)] uppercase tracking-[0.2em]">◆ wall message</span>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-1.5 rounded-full hover:bg-[var(--w-surface-2)] transition-colors"
+            title={currentTheme === 'auto' ? 'Mode Sistem' : currentTheme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
+          >
+            {currentTheme === 'auto' ? (
+              <Monitor size={14} className="text-[var(--w-text-muted)]" />
+            ) : currentTheme === 'dark' ? (
+              <Sun size={14} className="text-[var(--w-text-muted)]" />
+            ) : (
+              <Moon size={14} className="text-[var(--w-text-muted)]" />
+            )}
+          </button>
         </div>
 
         {/* Message body */}

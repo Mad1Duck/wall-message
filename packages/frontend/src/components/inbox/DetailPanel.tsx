@@ -51,17 +51,17 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
   }
 
   return (
-    <div className="h-full flex flex-col overflow-y-auto">
+    <div className="h-full flex flex-col overflow-y-auto ">
 
       {/* Message card */}
-      <div className="p-5 border-b border-[#1a1a1a]">
-        <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl p-4 mb-3">
-          <p className="display-title italic text-[15px] text-[#cccccc] leading-[1.65] mb-3">
+      <div className="p-5 border-b border-[var(--w-border-mid)]">
+        <div className="bg-[var(--w-surface-2)] border border-[var(--w-border-mid)] rounded-xl p-4 mb-3">
+          <p className="display-title italic text-[15px] text-[var(--w-text-2)] leading-[1.65] mb-3">
             {message.content}
           </p>
           <div className="flex items-center justify-between">
-            <p className="text-[10px] text-[#444444] italic">{message.alias}</p>
-            <p className="text-[10px] text-[#2a2a2a]">{relativeTime(message.created_at)}</p>
+            <p className="text-[10px] text-[var(--w-text-dim)] italic">{message.alias}</p>
+            <p className="text-[10px] text-[var(--w-text-muted)]">{relativeTime(message.created_at)}</p>
           </div>
         </div>
 
@@ -69,18 +69,18 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
         <div className="flex items-center gap-2">
           <span className={`text-[9px] px-2 py-0.5 rounded-full border uppercase tracking-widest ${
             message.reply
-              ? 'border-[#2a2a2a] text-[#555555]'
-              : 'border-[#444444] text-[#888888]'
+              ? 'border-[var(--w-border-mid)] text-[var(--w-text-muted)]'
+              : 'border-[var(--w-border-strong)] text-[var(--w-text-2)]'
           }`}>
             {message.reply ? 'Sudah dibalas' : 'Belum dibalas'}
           </span>
           {message.is_public && (
-            <span className="text-[9px] px-2 py-0.5 rounded-full border border-[#2a2a2a] text-[#555555] uppercase tracking-widest">
+            <span className="text-[9px] px-2 py-0.5 rounded-full border border-[var(--w-border-mid)] text-[var(--w-text-muted)] uppercase tracking-widest">
               Publik
             </span>
           )}
           {message.is_pinned && (
-            <span className="text-[9px] px-2 py-0.5 rounded-full border border-[#2a2a2a] text-[#444444] uppercase tracking-widest">
+            <span className="text-[9px] px-2 py-0.5 rounded-full border border-[var(--w-border-mid)] text-[var(--w-text-dim)] uppercase tracking-widest">
               ◆ Disematkan
             </span>
           )}
@@ -93,13 +93,13 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
         {/* Existing reply (read state) */}
         {message.reply && !isEditing && (
           <div>
-            <p className="text-[9px] text-[#333333] uppercase tracking-[0.18em] mb-2">Balasanmu</p>
-            <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl p-4">
-              <p className="text-[13px] text-[#888888] italic leading-relaxed">{message.reply}</p>
+            <p className="text-[9px] text-[var(--w-text-muted)] uppercase tracking-[0.18em] mb-2">Balasanmu</p>
+            <div className="bg-[var(--w-surface-2)] border border-[var(--w-border-mid)] rounded-xl p-4">
+              <p className="text-[13px] text-[var(--w-text-2)] italic leading-relaxed">{message.reply}</p>
             </div>
             <button
               onClick={() => setIsEditing(true)}
-              className="mt-2 text-[10px] text-[#333333] hover:text-[#ffffff] uppercase tracking-widest transition-colors"
+              className="mt-2 text-[10px] text-[var(--w-text-muted)] hover:text-[var(--w-text)] uppercase tracking-widest transition-colors"
             >
               Edit →
             </button>
@@ -110,31 +110,31 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
         {isEditing && (
           <>
             <div>
-              <p className="text-[9px] text-[#333333] uppercase tracking-[0.18em] mb-2">
+              <p className="text-[9px] text-[var(--w-text-muted)] uppercase tracking-[0.18em] mb-2">
                 {message.reply ? 'Edit Balasan' : 'Tulis Balasan'}
               </p>
               <textarea
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
                 placeholder="Tulis balasanmu..."
-                className="w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-4 py-3 text-[13px] text-[#aaaaaa] placeholder-[#333333] focus:outline-none focus:border-[#555555] resize-none transition-colors"
+                className="w-full bg-[var(--w-surface-2)] border border-[var(--w-border-mid)] rounded-xl px-4 py-3 text-[13px] text-[var(--w-text-2)] placeholder-[var(--w-text-muted)] focus:outline-none focus:border-[var(--w-border-strong)] resize-none transition-colors"
                 style={{ minHeight: '80px' }}
               />
             </div>
 
             {/* Public toggle */}
-            <div className="flex items-center justify-between bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl px-4 py-3">
+            <div className="flex items-center justify-between bg-[var(--w-surface-2)] border border-[var(--w-border-mid)] rounded-xl px-4 py-3">
               <div>
-                <p className="text-[12px] text-[#aaaaaa] font-medium">Tampilkan di Wall</p>
-                <p className="text-[10px] text-[#333333] mt-0.5">Pesan &amp; balasan terlihat publik</p>
+                <p className="text-[12px] text-[var(--w-text-2)] font-medium">Tampilkan di Wall</p>
+                <p className="text-[10px] text-[var(--w-text-muted)] mt-0.5">Pesan &amp; balasan terlihat publik</p>
               </div>
               <button
                 onClick={() => setIsPublic(!isPublic)}
-                style={{ width: 40, height: 22, background: isPublic ? '#ffffff' : '#2a2a2a' }}
+                style={{ width: 40, height: 22, background: isPublic ? 'var(--w-text)' : 'var(--w-border-mid)' }}
                 className="relative rounded-full transition-colors shrink-0"
               >
                 <div
-                  className="absolute w-4 h-4 bg-[#0a0a0a] rounded-full transition-transform"
+                  className="absolute w-4 h-4 bg-[var(--w-bg)] rounded-full transition-transform"
                   style={{ top: 3, left: isPublic ? 20 : 3 }}
                 />
               </button>
@@ -144,7 +144,7 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
             {message.is_public && (
               <div>
                 {pinnedCount >= 3 && !message.is_pinned && (
-                  <p className="text-[10px] text-[#555555] mb-2">
+                  <p className="text-[10px] text-[var(--w-text-muted)] mb-2">
                     Maksimal 3 pesan disematkan. Lepas pin salah satu dulu.
                   </p>
                 )}
@@ -153,10 +153,10 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
                   disabled={pinnedCount >= 3 && !message.is_pinned}
                   className={`w-full py-2.5 rounded-lg text-[12px] border transition-colors ${
                     message.is_pinned
-                      ? 'bg-[#f5f5f5] border-[#e0e0e0] text-[#666666] hover:bg-[#ebebeb]'
+                      ? 'bg-[var(--w-surface)] border-[var(--w-border)] text-[var(--w-text-muted)] hover:bg-[var(--w-surface-2)]'
                       : pinnedCount >= 3
-                        ? 'bg-white border-black text-black opacity-40 cursor-not-allowed'
-                        : 'bg-white border-black text-black hover:bg-[#f5f5f5]'
+                        ? 'bg-[var(--w-surface)] border-[var(--w-text)] text-[var(--w-text)] opacity-40 cursor-not-allowed'
+                        : 'bg-[var(--w-surface)] border-[var(--w-text)] text-[var(--w-text)] hover:bg-[var(--w-surface-2)]'
                   }`}
                 >
                   {message.is_pinned ? '◆ Lepas Sematkan' : '◆ Sematkan ke Atas'}
@@ -168,14 +168,14 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
             <div className="flex gap-2">
               <button
                 onClick={handleSave}
-                className="flex-1 bg-[#ffffff] text-[#0a0a0a] py-2.5 rounded-lg text-[12px] font-medium uppercase tracking-[0.04em] hover:bg-[#e0e0e0] transition-colors"
+                className="flex-1 bg-[var(--w-text)] text-[var(--w-bg)] py-2.5 rounded-lg text-[12px] font-medium uppercase tracking-[0.04em] hover:bg-[var(--w-text-2)] transition-colors"
               >
                 Simpan
               </button>
               {message.reply && (
                 <button
                   onClick={() => { setIsEditing(false); setReply(message.reply || ''); setIsPublic(message.is_public) }}
-                  className="px-4 border border-[#2a2a2a] text-[#555555] py-2.5 rounded-lg text-[12px] hover:border-[#444444] hover:text-[#aaaaaa] transition-colors"
+                  className="px-4 border border-[var(--w-border-mid)] text-[var(--w-text-muted)] py-2.5 rounded-lg text-[12px] hover:border-[var(--w-border-strong)] hover:text-[var(--w-text-2)] transition-colors"
                 >
                   Batal
                 </button>
@@ -186,22 +186,22 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
 
         {/* Embed — only for public messages */}
         {message.is_public && (
-          <div className="border-t border-[#1a1a1a] pt-4">
-            <p className="text-[9px] text-[#333333] uppercase tracking-[0.18em] mb-2">Embed</p>
-            <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg p-3 flex items-start gap-2 mb-2">
-              <code className="flex-1 text-[9px] text-[#444444] break-all leading-relaxed font-mono">
+          <div className="border-t border-[var(--w-border-mid)] pt-4">
+            <p className="text-[9px] text-[var(--w-text-muted)] uppercase tracking-[0.18em] mb-2">Embed</p>
+            <div className="bg-[var(--w-surface-2)] border border-[var(--w-border-mid)] rounded-lg p-3 flex items-start gap-2 mb-2">
+              <code className="flex-1 text-[9px] text-white break-all leading-relaxed font-mono">
                 {embedCode}
               </code>
               <button
                 onClick={handleCopyEmbed}
-                className="shrink-0 text-[10px] text-[#333333] hover:text-[#ffffff] transition-colors whitespace-nowrap"
+                className="shrink-0 text-[10px] text-[var(--w-text-muted)] hover:text-[var(--w-text)] transition-colors whitespace-nowrap"
               >
                 {embedCopied ? '✓' : 'Salin'}
               </button>
             </div>
             <div className="mt-2">
               <a href={embedUrl} target="_blank" rel="noopener noreferrer"
-                className="text-[10px] text-[#333333] hover:text-[#555555] transition-colors"
+                className="text-[10px] text-[var(--w-text-muted)] hover:text-[var(--w-text-2)] transition-colors"
               >
                 Preview →
               </a>
@@ -210,27 +210,27 @@ export default function DetailPanel({ message, pinnedCount, onUpdateReply, onTog
         )}
 
         {/* Delete */}
-        <div className="border-t border-[#1a1a1a] pt-4 mt-auto">
+        <div className="border-t border-[var(--w-border-mid)] pt-4 mt-auto">
           {!showDelete ? (
             <button
               onClick={() => setShowDelete(true)}
-              className="text-[10px] text-[#2a2a2a] hover:text-[#ff6b6b] uppercase tracking-widest transition-colors w-full text-center"
+              className="text-[10px] text-[var(--w-text-muted)] hover:text-[#ff6b6b] uppercase tracking-widest transition-colors w-full text-center"
             >
               Hapus pesan ini
             </button>
           ) : (
-            <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl p-4">
-              <p className="text-[11px] text-[#555555] text-center mb-3">Yakin ingin menghapus?</p>
+            <div className="bg-[var(--w-surface-2)] border border-[var(--w-border-mid)] rounded-xl p-4">
+              <p className="text-[11px] text-[var(--w-text-muted)] text-center mb-3">Yakin ingin menghapus?</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => onDeleteMessage(message.id)}
-                  className="flex-1 bg-[#1a1a1a] text-[#ff6b6b] border border-[#2a2a2a] py-2 rounded-lg text-[11px] hover:bg-[#2a2a2a] transition-colors"
+                  className="flex-1 bg-[var(--w-surface-2)] text-[#ff6b6b] border border-[var(--w-border-mid)] py-2 rounded-lg text-[11px] hover:bg-[var(--w-border-mid)] transition-colors"
                 >
                   Hapus
                 </button>
                 <button
                   onClick={() => setShowDelete(false)}
-                  className="flex-1 border border-[#2a2a2a] text-[#555555] py-2 rounded-lg text-[11px] hover:text-[#aaaaaa] transition-colors"
+                  className="flex-1 border border-[var(--w-border-mid)] text-[var(--w-text-muted)] py-2 rounded-lg text-[11px] hover:text-[var(--w-text-2)] transition-colors"
                 >
                   Batal
                 </button>

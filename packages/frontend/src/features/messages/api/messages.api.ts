@@ -4,12 +4,18 @@ import type { Message, SendMessageData, UpdateMessageData, ReactionType, Message
 export const messageKeys = {
   all: ['messages'] as const,
   byWall: (wallId: string) => ['messages', 'byWall', wallId] as const,
+  byMiniWall: (miniWallId: string) => ['messages', 'byMiniWall', miniWallId] as const,
   stats: ['messages', 'stats'] as const,
 };
 
 export const messagesApi = {
   getByWallId: async (wallId: string): Promise<Message[]> => {
     const { data } = await api.get<Message[]>(`/api/messages/by-wall/${encodeURIComponent(wallId)}`);
+    return data;
+  },
+
+  getByMiniWallId: async (miniWallId: string): Promise<Message[]> => {
+    const { data } = await api.get<Message[]>(`/api/messages/by-mini-wall/${encodeURIComponent(miniWallId)}`);
     return data;
   },
 

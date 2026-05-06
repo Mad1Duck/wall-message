@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import ThemeToggle from './ThemeToggle'
 
 export default function Footer() {
   return (
@@ -27,9 +26,6 @@ export default function Footer() {
             Jelajahi
           </Link>
         </nav>
-
-        {/* Theme toggle */}
-        <ThemeToggle />
 
         {/* Tagline + copyright */}
         <div className="flex flex-col items-center gap-1.5">
