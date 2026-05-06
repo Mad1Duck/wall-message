@@ -19,6 +19,7 @@ import { Route as EmbedMessageIdRouteImport } from './routes/embed/$messageId'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as MessageUsernameIndexRouteImport } from './routes/message/$username/index'
 import { Route as MessageUsernameInboxRouteImport } from './routes/message/$username/inbox'
+import { Route as MessageUsernameSlugRouteImport } from './routes/message/$username/$slug'
 
 const SsoCallbackRoute = SsoCallbackRouteImport.update({
   id: '/sso-callback',
@@ -70,6 +71,11 @@ const MessageUsernameInboxRoute = MessageUsernameInboxRouteImport.update({
   path: '/message/$username/inbox',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessageUsernameSlugRoute = MessageUsernameSlugRouteImport.update({
+  id: '/message/$username/$slug',
+  path: '/message/$username/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/sso-callback': typeof SsoCallbackRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/embed/$messageId': typeof EmbedMessageIdRoute
+  '/message/$username/$slug': typeof MessageUsernameSlugRoute
   '/message/$username/inbox': typeof MessageUsernameInboxRoute
   '/message/$username/': typeof MessageUsernameIndexRoute
 }
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/sso-callback': typeof SsoCallbackRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/embed/$messageId': typeof EmbedMessageIdRoute
+  '/message/$username/$slug': typeof MessageUsernameSlugRoute
   '/message/$username/inbox': typeof MessageUsernameInboxRoute
   '/message/$username': typeof MessageUsernameIndexRoute
 }
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/sso-callback': typeof SsoCallbackRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/embed/$messageId': typeof EmbedMessageIdRoute
+  '/message/$username/$slug': typeof MessageUsernameSlugRoute
   '/message/$username/inbox': typeof MessageUsernameInboxRoute
   '/message/$username/': typeof MessageUsernameIndexRoute
 }
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/sso-callback'
     | '/auth/callback'
     | '/embed/$messageId'
+    | '/message/$username/$slug'
     | '/message/$username/inbox'
     | '/message/$username/'
   fileRoutesByTo: FileRoutesByTo
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/sso-callback'
     | '/auth/callback'
     | '/embed/$messageId'
+    | '/message/$username/$slug'
     | '/message/$username/inbox'
     | '/message/$username'
   id:
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/sso-callback'
     | '/auth/callback'
     | '/embed/$messageId'
+    | '/message/$username/$slug'
     | '/message/$username/inbox'
     | '/message/$username/'
   fileRoutesById: FileRoutesById
@@ -156,6 +168,7 @@ export interface RootRouteChildren {
   SsoCallbackRoute: typeof SsoCallbackRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   EmbedMessageIdRoute: typeof EmbedMessageIdRoute
+  MessageUsernameSlugRoute: typeof MessageUsernameSlugRoute
   MessageUsernameInboxRoute: typeof MessageUsernameInboxRoute
   MessageUsernameIndexRoute: typeof MessageUsernameIndexRoute
 }
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessageUsernameInboxRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/message/$username/$slug': {
+      id: '/message/$username/$slug'
+      path: '/message/$username/$slug'
+      fullPath: '/message/$username/$slug'
+      preLoaderRoute: typeof MessageUsernameSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -244,6 +264,7 @@ const rootRouteChildren: RootRouteChildren = {
   SsoCallbackRoute: SsoCallbackRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   EmbedMessageIdRoute: EmbedMessageIdRoute,
+  MessageUsernameSlugRoute: MessageUsernameSlugRoute,
   MessageUsernameInboxRoute: MessageUsernameInboxRoute,
   MessageUsernameIndexRoute: MessageUsernameIndexRoute,
 }

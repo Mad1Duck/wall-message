@@ -8,6 +8,7 @@ const CreateMessageSchema = z.object({
   recipient: z.string().min(1),
   content: z.string().min(1).max(500),
   alias: z.string().max(100).default('Seseorang yang peduli 🌙'),
+  mini_wall_id: z.string().uuid().optional(),
 });
 
 const UpdateMessageSchema = z.object({
@@ -30,6 +31,12 @@ export class MessagesController {
     return this.messagesService.getByWallId(wallId);
   }
 
+  @Get('/by-mini-wall/:miniWallId')
+  async getByMiniWallId(@Param('miniWallId') miniWallId: string) {
+    if (!miniWallId) throw new HTTPException(400, { message: 'mini_wall_id is required' });
+    return this.messagesService.getByMiniWallId(miniWallId);
+  }
+
   @Get('/stats')
   getStats() {
     return this.messagesService.getStats();
@@ -49,6 +56,7 @@ export class MessagesController {
       recipient: body.recipient,
       content: body.content,
       alias: body.alias,
+      miniWallId: body.mini_wall_id,
     });
     if (!msg) throw new HTTPException(500, { message: 'Failed to send message' });
     return msg;

@@ -71,7 +71,7 @@ export default function InboxLayout({
   const selectedMessage = messages.find((m) => m.id === selectedId)
 
   return (
-    <main className="h-screen bg-[#0a0a0a] flex flex-col lg:flex-row overflow-hidden">
+    <main className="h-screen bg-[var(--w-bg)] flex flex-col lg:flex-row overflow-hidden">
 
       {/* Sidebar */}
       <InboxSidebar
@@ -88,7 +88,7 @@ export default function InboxLayout({
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
 
         {/* Message list */}
-        <div className="lg:w-72 border-b lg:border-b-0 lg:border-r border-[#1a1a1a] overflow-hidden flex flex-col"
+        <div className="lg:w-72 overflow-hidden flex flex-col"
           style={{ height: selectedMessage ? '40%' : '100%' }}>
           <InboxList
             messages={filtered}
@@ -98,7 +98,7 @@ export default function InboxLayout({
         </div>
 
         {/* Detail */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden border-b lg:border-b-0 lg:border-l border-[var(--w-border-mid)] ">
           {selectedMessage ? (
             <DetailPanel
               message={selectedMessage}
@@ -109,8 +109,8 @@ export default function InboxLayout({
             />
           ) : (
             <div className="h-full flex flex-col items-center justify-center gap-3">
-              <span className="text-[#1a1a1a] text-3xl">◆</span>
-              <p className="text-[12px] text-[#2a2a2a]">Pilih pesan untuk melihat detail</p>
+              <span className="text-[var(--w-border-mid)] text-3xl">◆</span>
+              <p className="text-[12px] text-[var(--w-text-muted)]">Pilih pesan untuk melihat detail</p>
             </div>
           )}
         </div>

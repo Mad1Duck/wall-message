@@ -3,9 +3,9 @@ import { Sun, Moon, Monitor } from 'lucide-react'
 import { applyThemeMode, type ThemeMode } from '#/lib/theme'
 
 function getInitialMode(): ThemeMode {
-  if (typeof window === 'undefined') return 'light'
+  if (typeof window === 'undefined') return 'dark'
   const stored = window.localStorage.getItem('theme')
-  return (stored === 'light' || stored === 'dark' || stored === 'auto') ? stored : 'light'
+  return (stored === 'light' || stored === 'dark' || stored === 'auto') ? stored : 'dark'
 }
 
 const CYCLE: ThemeMode[] = ['dark', 'light', 'auto']

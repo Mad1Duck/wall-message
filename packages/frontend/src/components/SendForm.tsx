@@ -8,10 +8,11 @@ interface SendFormProps {
   onMessageSent: () => void;
   recipient?: string;
   wallId?: string;
+  miniWallId?: string;
   mutation?: UseMutationResult<Message, Error, SendMessageData>;
 }
 
-export default function SendForm({ onMessageSent, recipient, wallId, mutation }: SendFormProps) {
+export default function SendForm({ onMessageSent, recipient, wallId, miniWallId, mutation }: SendFormProps) {
   const ownMutation = useSendMessage();
   const send = mutation ?? ownMutation;
   const [content, setContent] = useState('');
@@ -50,6 +51,7 @@ export default function SendForm({ onMessageSent, recipient, wallId, mutation }:
         recipient: recipient || '',
         content: content.trim(),
         alias: useAlias && alias.trim() ? alias.trim() : 'Seseorang yang peduli 🌙',
+        mini_wall_id: miniWallId,
       },
       {
         onSuccess: () => {
