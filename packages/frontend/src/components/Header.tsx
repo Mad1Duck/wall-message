@@ -26,9 +26,9 @@ export default function Header({ displayName, bio, isOwner }: HeaderProps) {
         )}
         <Link
           to="/"
-          className="text-[10px] text-[#333333] hover:text-[#555555] uppercase tracking-[0.14em] transition-colors"
+            className="text-[10px] text-[#555555] hover:text-[#ffffff] uppercase tracking-[0.14em] transition-colors border border-[#1e1e1e] rounded-md px-2.5 py-1.5 hover:border-[#333333]"
         >
-          ◆
+          Home ◆ 
         </Link>
       </div>
 
