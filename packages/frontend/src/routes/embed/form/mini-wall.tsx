@@ -51,11 +51,7 @@ function MiniWallFormEmbed() {
       root.style.setProperty('--w-border-mid', search.border)
     }
     if (search.accent) root.style.setProperty('--w-accent', search.accent)
-    if (search.radius) {
-      document.querySelectorAll('.rounded-2xl, .rounded-lg').forEach((el) => {
-        ;(el as HTMLElement).style.borderRadius = `${search.radius}px`
-      })
-    }
+    if (search.radius) root.style.setProperty('--w-radius', `${search.radius}px`)
     if (search.customCss) {
       const styleId = 'custom-embed-css'
       let styleEl = document.getElementById(styleId) as HTMLStyleElement | null
@@ -121,7 +117,7 @@ function MiniWallFormEmbed() {
 
   return (
     <div className={`${isCompact ? '' : 'min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6'}`}>
-      <div className={`w-full ${isCompact ? 'min-h-screen' : 'max-w-md'} bg-[var(--w-surface)] border border-[var(--w-border)] rounded-2xl overflow-hidden shadow-lg`}>
+      <div className={`w-full ${isCompact ? 'min-h-screen' : 'max-w-md'} bg-[var(--w-surface)] border border-[var(--w-border)] overflow-hidden shadow-lg`} style={{ borderRadius: 'var(--w-radius, 1rem)' }}>
 
         {/* Header */}
         <div className="px-5 pt-4 pb-0 flex items-center justify-between">
@@ -149,7 +145,8 @@ function MiniWallFormEmbed() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={search.placeholder || 'Tulis pesanmu di sini...'}
-              className="w-full min-h-24 px-3 py-2 bg-[var(--w-bg)] border border-[var(--w-border-mid)] rounded-lg text-[13px] text-[var(--w-text)] placeholder:text-[var(--w-text-dim)] resize-none focus:outline-none focus:border-[var(--w-text-muted)] transition-colors"
+              className="w-full min-h-24 px-3 py-2 bg-[var(--w-bg)] border border-[var(--w-border-mid)] text-[13px] text-[var(--w-text)] placeholder:text-[var(--w-text-dim)] resize-none focus:outline-none focus:border-[var(--w-text-muted)] transition-colors"
+              style={{ borderRadius: 'var(--w-radius, 0.5rem)' }}
               maxLength={500}
             />
 
@@ -172,7 +169,8 @@ function MiniWallFormEmbed() {
                 value={alias}
                 onChange={(e) => setAlias(e.target.value)}
                 placeholder="Nama kamu (opsional)"
-                className="w-full px-3 py-2 bg-[var(--w-bg)] border border-[var(--w-border-mid)] rounded-lg text-[13px] text-[var(--w-text)] placeholder:text-[var(--w-text-dim)] focus:outline-none focus:border-[var(--w-text-muted)] transition-colors"
+                className="w-full px-3 py-2 bg-[var(--w-bg)] border border-[var(--w-border-mid)] text-[13px] text-[var(--w-text)] placeholder:text-[var(--w-text-dim)] focus:outline-none focus:border-[var(--w-text-muted)] transition-colors"
+                style={{ borderRadius: 'var(--w-radius, 0.5rem)' }}
                 maxLength={100}
               />
             )}
@@ -180,7 +178,8 @@ function MiniWallFormEmbed() {
             <button
               type="submit"
               disabled={send.isPending}
-              className="w-full px-4 py-2.5 bg-[var(--w-text)] text-[var(--w-bg)] rounded-lg text-[12px] font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full px-4 py-2.5 bg-[var(--w-text)] text-[var(--w-bg)] text-[12px] font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              style={{ borderRadius: 'var(--w-radius, 0.5rem)' }}
             >
               {send.isPending ? 'Mengirim...' : (search.btnText || 'Kirim Pesan')}
             </button>

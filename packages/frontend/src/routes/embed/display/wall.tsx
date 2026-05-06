@@ -45,11 +45,7 @@ function WallDisplayEmbed() {
       root.style.setProperty('--w-border-mid', search.border)
     }
     if (search.accent) root.style.setProperty('--w-accent', search.accent)
-    if (search.radius) {
-      document.querySelectorAll('.rounded-2xl, .rounded-lg').forEach((el) => {
-        ;(el as HTMLElement).style.borderRadius = `${search.radius}px`
-      })
-    }
+    if (search.radius) root.style.setProperty('--w-radius', `${search.radius}px`)
     if (search.customCss) {
       const styleId = 'custom-embed-css'
       let styleEl = document.getElementById(styleId) as HTMLStyleElement | null
@@ -99,7 +95,26 @@ function WallDisplayEmbed() {
   if (isLoading) {
     return (
       <div className={`${isCompact ? '' : 'min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6'}`}>
-        <div className="w-4 h-4 border-2 border-[var(--w-text)] border-t-transparent rounded-full animate-spin" />
+        <div className={`w-full ${isCompact ? 'min-h-screen' : 'max-w-md'} bg-[var(--w-surface)] border border-[var(--w-border)] overflow-hidden shadow-lg`} style={{ borderRadius: 'var(--w-radius, 1rem)' }}>
+          {/* Header */}
+          <div className="px-5 pt-4 pb-0 flex items-center justify-between">
+            <span className="text-[9px] text-[var(--w-text-dim)] uppercase tracking-[0.2em]">◆ Pesan</span>
+            <div className="w-8 h-8 bg-[var(--w-bg)] rounded-full animate-pulse" />
+          </div>
+          {/* Skeleton messages */}
+          <div className="px-5 py-4 space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="p-3 bg-[var(--w-bg)] border border-[var(--w-border-mid)]" style={{ borderRadius: 'var(--w-radius, 0.5rem)' }}>
+                <div className="h-4 bg-[var(--w-border-mid)] rounded animate-pulse mb-2" />
+                <div className="h-3 bg-[var(--w-border-mid)] rounded animate-pulse w-2/3" />
+              </div>
+            ))}
+          </div>
+          {/* Footer */}
+          <div className="px-5 py-3 border-t border-[var(--w-border)]">
+            <div className="h-3 bg-[var(--w-border-mid)] rounded animate-pulse w-1/3 mx-auto" />
+          </div>
+        </div>
       </div>
     )
   }
@@ -114,10 +129,10 @@ function WallDisplayEmbed() {
 
   return (
     <div className={`${isCompact ? '' : 'min-h-screen bg-[var(--w-bg)] flex items-center justify-center p-6'}`}>
-      <div className={`w-full ${isCompact ? 'min-h-screen' : 'max-w-md'} bg-[var(--w-surface)] border border-[var(--w-border)] rounded-2xl overflow-hidden shadow-lg`}>
+      <div className={`w-full ${isCompact ? 'min-h-screen' : 'max-w-md'} bg-[var(--w-surface)] border border-[var(--w-border)] overflow-hidden shadow-lg flex flex-col`} style={{ borderRadius: 'var(--w-radius, 1rem)' }}>
 
         {/* Header */}
-        <div className="px-5 pt-4 pb-0 flex items-center justify-between">
+        <div className="px-5 pt-4 pb-0 flex items-center justify-between shrink-0">
           <span className="text-[9px] text-[var(--w-text-dim)] uppercase tracking-[0.2em]">◆ Pesan</span>
           <button
             type="button"
@@ -136,7 +151,7 @@ function WallDisplayEmbed() {
         </div>
 
         {/* Messages */}
-        <div className="px-5 py-4 space-y-3 max-h-96 overflow-y-auto overflow-x-hidden">
+        <div className="px-5 py-4 space-y-3 overflow-y-auto overflow-x-hidden flex-1">
           {displayMessages.length === 0 ? (
             <p className="text-[13px] text-[var(--w-text-muted)] text-center py-8">
               Belum ada pesan
@@ -145,7 +160,8 @@ function WallDisplayEmbed() {
             displayMessages.map((msg) => (
               <div
                 key={msg.id}
-                className="p-3 bg-[var(--w-bg)] border border-[var(--w-border-mid)] rounded-lg break-words overflow-hidden"
+                className="p-3 bg-[var(--w-bg)] border border-[var(--w-border-mid)] break-words overflow-hidden"
+                style={{ borderRadius: 'var(--w-radius, 0.5rem)' }}
               >
                 {msg.is_pinned && (
                   <div className="flex items-center gap-1.5 mb-2">
